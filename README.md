@@ -29,7 +29,7 @@ azureDeploy: "https://raw.githubusercontent.com/Azure-Samples/azure-private-link
 
 # Create a Private Link Service using Bicep
 
-This sample shows how to use [Bicep](https://docs.microsoft.com/en-us/azure/azure-resource-manager/bicep/overview) to create an [Azure Private Link Service](https://docs.microsoft.com/en-us/azure/private-link/private-link-service-overview) that can be accessed by a third party via an [Azure Private Endpoint](https://docs.microsoft.com/en-us/azure/private-link/private-endpoint-overview). This sample deploys all the Azure resources in the same resource group in the same Azure subscription. In a real-world scenario, service consumer and service provider resources will be hosted distinct Azure subscriptions under the same or a different Azure Active Directory tenant.
+This sample shows how to use [Bicep](https://docs.microsoft.com/en-us/azure/azure-resource-manager/bicep/overview) to create an [Azure Private Link Service](https://docs.microsoft.com/en-us/azure/private-link/private-link-service-overview) that can be accessed by a third party via an [Azure Private Endpoint](https://docs.microsoft.com/en-us/azure/private-link/private-endpoint-overview). Bicep modules deploy all the Azure resources in the same resource group in the same Azure subscription. In a real-world scenario, service consumer and service provider resources will be hosted distinct Azure subscriptions under the same or a different Azure Active Directory tenant.
 
 ## Prerequisites
 
@@ -71,15 +71,23 @@ You can deploy the Bicep modules in the `bicep` folder using either Azure CLI or
 ### Azure CLI
 
 ```azurecli
-az group create --name SampleRG --location westeurope
-az deployment group create --resource-group SampleRG --template-file main.bicep --parameters vmAdminUsername=<admin-user>
+az group create \
+  --name SampleRG \
+  --location westeurope
+az deployment group create \
+  --resource-group SampleRG \
+  --template-file main.bicep \
+  --parameters vmAdminUsername=<admin-user>
 ```
 
 ### PowerShell
 
 ```azurepowershell
 New-AzResourceGroup -Name SampleRG -Location westeurope
-New-AzResourceGroupDeployment -ResourceGroupName SampleRG -TemplateFile ./main.bicep -vmAdminUsername "<admin-user>"
+New-AzResourceGroupDeployment `
+  -ResourceGroupName SampleRG `
+  -TemplateFile ./main.bicep `
+  -vmAdminUsername "<admin-user>"
 ```
 
 ### Bash Script
@@ -108,12 +116,12 @@ subscriptionName=$(az account show --query name --output tsv)
 tenantId=$(az account show --query tenantId --output tsv)
 
 # Check if the resource group already exists
-echo "Checking if [$resourceGroupName] resource group actually exists in the [$subscriptionName] subscription..."
+echo "Checking if [$resourceGroupName] resource group exists in the [$subscriptionName] subscription..."
 
 az group show --name $resourceGroupName &>/dev/null
 
 if [[ $? != 0 ]]; then
-  echo "No [$resourceGroupName] resource group actually exists in the [$subscriptionName] subscription"
+  echo "No [$resourceGroupName] resource group exists in the [$subscriptionName] subscription"
   echo "Creating [$resourceGroupName] resource group in the [$subscriptionName] subscription..."
 
   # Create the resource group
