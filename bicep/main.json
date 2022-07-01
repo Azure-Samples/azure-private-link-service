@@ -1,0 +1,4087 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.7.4.23292",
+      "templateHash": "7186974794782250559"
+    }
+  },
+  "parameters": {
+    "prefix": {
+      "type": "string",
+      "defaultValue": "$uniqueString(resourceGroup().id)",
+      "metadata": {
+        "description": "Specifies the name prefix."
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Specifies the location of AKS cluster."
+      }
+    },
+    "serviceVirtualNetworkName": {
+      "type": "string",
+      "defaultValue": "[format('{0}ServiceVnet', parameters('prefix'))]",
+      "metadata": {
+        "description": "Specifies the name of the service virtual network."
+      }
+    },
+    "serviceVirtualNetworkAddressPrefixes": {
+      "type": "string",
+      "defaultValue": "10.0.0.0/16",
+      "metadata": {
+        "description": "Specifies the address prefixes of the service virtual network."
+      }
+    },
+    "serviceFrontendSubnetName": {
+      "type": "string",
+      "defaultValue": "FrontendSubnet",
+      "metadata": {
+        "description": "Specifies the name of the frontend subnet hosting the Azure Private Link Service."
+      }
+    },
+    "serviceFrontendSubnetAddressPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.0.0/24",
+      "metadata": {
+        "description": "Specifies the address prefix of the subnet hosting the Azure Private Link Service."
+      }
+    },
+    "serviceFrontendSubnetPrivateEndpointNetworkPolicies": {
+      "type": "string",
+      "defaultValue": "Enabled",
+      "allowedValues": [
+        "Disabled",
+        "Enabled"
+      ],
+      "metadata": {
+        "description": "Enable or Disable apply network policies on private end point in the subnet."
+      }
+    },
+    "serviceFrontendSubnetPrivateLinkServiceNetworkPolicies": {
+      "type": "string",
+      "defaultValue": "Disabled",
+      "allowedValues": [
+        "Disabled",
+        "Enabled"
+      ],
+      "metadata": {
+        "description": "Enable or Disable apply network policies on private link service in the subnet."
+      }
+    },
+    "serviceBackendSubnetName": {
+      "type": "string",
+      "defaultValue": "BackendSubnet",
+      "metadata": {
+        "description": "Specifies the name of the subnet hosting the backend service virtual machine."
+      }
+    },
+    "serviceBackendSubnetAddressPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.1.0/24",
+      "metadata": {
+        "description": "Specifies the address prefix of the subnet which contains the backend service virtual machine."
+      }
+    },
+    "serviceBackendSubnetPrivateEndpointNetworkPolicies": {
+      "type": "string",
+      "defaultValue": "Disabled",
+      "allowedValues": [
+        "Disabled",
+        "Enabled"
+      ],
+      "metadata": {
+        "description": "Enable or Disable apply network policies on private end point in the subnet."
+      }
+    },
+    "serviceBackendSubnetPrivateLinkServiceNetworkPolicies": {
+      "type": "string",
+      "defaultValue": "Enabled",
+      "allowedValues": [
+        "Disabled",
+        "Enabled"
+      ],
+      "metadata": {
+        "description": "Enable or Disable apply network policies on private link service in the subnet."
+      }
+    },
+    "serviceBastionHostName": {
+      "type": "string",
+      "defaultValue": "[format('{0}ServiceBastionHost', parameters('prefix'))]",
+      "metadata": {
+        "description": "Specifies the name of the bastion host in the service virtual network."
+      }
+    },
+    "serviceBastionSubnetAddressPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.2.0/24",
+      "metadata": {
+        "description": "Specifies the Bastion subnet IP prefix. This prefix must be within vnet IP prefix address space."
+      }
+    },
+    "clientVirtualNetworkName": {
+      "type": "string",
+      "defaultValue": "[format('{0}ClientVnet', parameters('prefix'))]",
+      "metadata": {
+        "description": "Specifies the name of the client virtual network."
+      }
+    },
+    "clientVirtualNetworkAddressPrefixes": {
+      "type": "string",
+      "defaultValue": "10.1.0.0/16",
+      "metadata": {
+        "description": "Specifies the address prefixes of the client virtual network."
+      }
+    },
+    "clientFrontendSubnetName": {
+      "type": "string",
+      "defaultValue": "FrontendSubnet",
+      "metadata": {
+        "description": "Specifies the name of the frontend subnet hosting the client virtual machine and Azure Private Endpoint."
+      }
+    },
+    "clientFrontendSubnetAddressPrefix": {
+      "type": "string",
+      "defaultValue": "10.1.0.0/24",
+      "metadata": {
+        "description": "Specifies the address prefix of the subnet hosting the client virtual machine and Azure Private Endpoint."
+      }
+    },
+    "clientFrontendSubnetPrivateEndpointNetworkPolicies": {
+      "type": "string",
+      "defaultValue": "Disabled",
+      "allowedValues": [
+        "Disabled",
+        "Enabled"
+      ],
+      "metadata": {
+        "description": "Enable or Disable apply network policies on private end point in the subnet."
+      }
+    },
+    "clientFrontendSubnetPrivateLinkServiceNetworkPolicies": {
+      "type": "string",
+      "defaultValue": "Enabled",
+      "allowedValues": [
+        "Disabled",
+        "Enabled"
+      ],
+      "metadata": {
+        "description": "Enable or Disable apply network policies on private link client in the subnet."
+      }
+    },
+    "clientBackendSubnetName": {
+      "type": "string",
+      "defaultValue": "BackendSubnet",
+      "metadata": {
+        "description": "Specifies the name of the backend subnet in the client virtual network."
+      }
+    },
+    "clientBackendSubnetAddressPrefix": {
+      "type": "string",
+      "defaultValue": "10.1.1.0/24",
+      "metadata": {
+        "description": "Specifies the address prefix of the backend subnet in the client virtual network."
+      }
+    },
+    "clientBackendSubnetPrivateEndpointNetworkPolicies": {
+      "type": "string",
+      "defaultValue": "Disabled",
+      "allowedValues": [
+        "Disabled",
+        "Enabled"
+      ],
+      "metadata": {
+        "description": "Enable or Disable apply network policies on private end point in the subnet."
+      }
+    },
+    "clientBackendSubnetPrivateLinkServiceNetworkPolicies": {
+      "type": "string",
+      "defaultValue": "Enabled",
+      "allowedValues": [
+        "Disabled",
+        "Enabled"
+      ],
+      "metadata": {
+        "description": "Enable or Disable apply network policies on private link client in the subnet."
+      }
+    },
+    "clientBastionHostName": {
+      "type": "string",
+      "defaultValue": "[format('{0}ClientBastionHost', parameters('prefix'))]",
+      "metadata": {
+        "description": "Specifies the name of the bastion host in the client virtual network."
+      }
+    },
+    "clientBastionSubnetAddressPrefix": {
+      "type": "string",
+      "defaultValue": "10.1.2.0/24",
+      "metadata": {
+        "description": "Specifies the Bastion subnet IP prefix. This prefix must be within vnet IP prefix address space."
+      }
+    },
+    "serviceLogAnalyticsWorkspaceName": {
+      "type": "string",
+      "defaultValue": "[format('{0}ServiceWorkspace', parameters('prefix'))]",
+      "metadata": {
+        "description": "Specifies the name of the service Log Analytics Workspace."
+      }
+    },
+    "clientLogAnalyticsWorkspaceName": {
+      "type": "string",
+      "defaultValue": "[format('{0}ClientWorkspace', parameters('prefix'))]",
+      "metadata": {
+        "description": "Specifies the name of the service Log Analytics Workspace."
+      }
+    },
+    "logAnalyticsSku": {
+      "type": "string",
+      "defaultValue": "PerNode",
+      "allowedValues": [
+        "Free",
+        "Standalone",
+        "PerNode",
+        "PerGB2018"
+      ],
+      "metadata": {
+        "description": "Specifies the service tier of the workspace: Free, Standalone, PerNode, Per-GB."
+      }
+    },
+    "logAnalyticsRetentionInDays": {
+      "type": "int",
+      "defaultValue": 60,
+      "metadata": {
+        "description": "Specifies the workspace data retention in days. -1 means Unlimited retention for the Unlimited Sku. 730 days is the maximum allowed for all other Skus."
+      }
+    },
+    "serviceVmName": {
+      "type": "string",
+      "defaultValue": "[format('{0}ServiceVm', parameters('prefix'))]",
+      "metadata": {
+        "description": "Specifies the name of the backend service virtual machine."
+      }
+    },
+    "serviceVmSize": {
+      "type": "string",
+      "defaultValue": "Standard_DS3_v2",
+      "metadata": {
+        "description": "Specifies the size of the backend service virtual machine."
+      }
+    },
+    "clientVmName": {
+      "type": "string",
+      "defaultValue": "[format('{0}ClientVm', parameters('prefix'))]",
+      "metadata": {
+        "description": "Specifies the name of the backend client virtual machine."
+      }
+    },
+    "clientVmSize": {
+      "type": "string",
+      "defaultValue": "Standard_DS3_v2",
+      "metadata": {
+        "description": "Specifies the size of the backend client virtual machine."
+      }
+    },
+    "imagePublisher": {
+      "type": "string",
+      "defaultValue": "Canonical",
+      "metadata": {
+        "description": "Specifies the image publisher of the disk image used to create the virtual machine."
+      }
+    },
+    "imageOffer": {
+      "type": "string",
+      "defaultValue": "UbuntuServer",
+      "metadata": {
+        "description": "Specifies the offer of the platform image or marketplace image used to create the virtual machine."
+      }
+    },
+    "imageSku": {
+      "type": "string",
+      "defaultValue": "18.04-LTS",
+      "metadata": {
+        "description": "Specifies the Ubuntu version for the VM. This will pick a fully patched image of this given Ubuntu version."
+      }
+    },
+    "authenticationType": {
+      "type": "string",
+      "defaultValue": "password",
+      "allowedValues": [
+        "sshPublicKey",
+        "password"
+      ],
+      "metadata": {
+        "description": "Specifies the type of authentication when accessing the Virtual Machine. SSH key is recommended."
+      }
+    },
+    "vmAdminUsername": {
+      "type": "string",
+      "defaultValue": "azadmin",
+      "metadata": {
+        "description": "Specifies the name of the administrator account of the virtual machine."
+      }
+    },
+    "vmAdminPasswordOrKey": {
+      "type": "secureString",
+      "metadata": {
+        "description": "Specifies the SSH Key or password for the virtual machine. SSH key is recommended."
+      }
+    },
+    "diskStorageAccountType": {
+      "type": "string",
+      "defaultValue": "Premium_LRS",
+      "allowedValues": [
+        "Premium_LRS",
+        "StandardSSD_LRS",
+        "Standard_LRS",
+        "UltraSSD_LRS"
+      ],
+      "metadata": {
+        "description": "Specifies the storage account type for OS and data disk."
+      }
+    },
+    "numDataDisks": {
+      "type": "int",
+      "defaultValue": 1,
+      "maxValue": 64,
+      "minValue": 0,
+      "metadata": {
+        "description": "Specifies the number of data disks of the virtual machine."
+      }
+    },
+    "osDiskSize": {
+      "type": "int",
+      "defaultValue": 50,
+      "metadata": {
+        "description": "Specifies the size in GB of the OS disk of the VM."
+      }
+    },
+    "dataDiskSize": {
+      "type": "int",
+      "defaultValue": 50,
+      "metadata": {
+        "description": "Specifies the size in GB of the OS disk of the virtual machine."
+      }
+    },
+    "dataDiskCaching": {
+      "type": "string",
+      "defaultValue": "ReadWrite",
+      "metadata": {
+        "description": "Specifies the caching requirements for the data disks."
+      }
+    },
+    "serviceBlobStorageAccountName": {
+      "type": "string",
+      "defaultValue": "[format('serverboot{0}', uniqueString(resourceGroup().id))]",
+      "metadata": {
+        "description": "Specifies the globally unique name for the service storage account used to store the boot diagnostics logs of the virtual machine."
+      }
+    },
+    "clientBlobStorageAccountName": {
+      "type": "string",
+      "defaultValue": "[format('clientboot{0}', uniqueString(resourceGroup().id))]",
+      "metadata": {
+        "description": "Specifies the globally unique name for the client storage account used to store the boot diagnostics logs of the virtual machine."
+      }
+    },
+    "scriptFilePath": {
+      "type": "string",
+      "defaultValue": "https://raw.githubusercontent.com/Azure-Samples/compute-automation-configurations/master/",
+      "metadata": {
+        "description": "Specifies the relative path of the scripts used to initialize the virtual machine."
+      }
+    },
+    "scriptFileName": {
+      "type": "string",
+      "defaultValue": "automate_nginx.sh",
+      "metadata": {
+        "description": "Specifies the script to download from the URI specified by the scriptFilePath parameter."
+      }
+    },
+    "tags": {
+      "type": "object",
+      "defaultValue": {
+        "IaC": "Bicep"
+      },
+      "metadata": {
+        "description": "Specifies the resource tags."
+      }
+    },
+    "loadBalancerName": {
+      "type": "string",
+      "defaultValue": "[format('{0}LoadBalancer', parameters('prefix'))]",
+      "metadata": {
+        "description": "Specifies the name of the load balancer"
+      }
+    },
+    "loadBalancerSkuName": {
+      "type": "string",
+      "defaultValue": "Standard",
+      "metadata": {
+        "description": "Specifies the sku of the load balancer"
+      }
+    },
+    "loadBalancerFrontEndIpConfigurationName": {
+      "type": "string",
+      "defaultValue": "FrontendIp",
+      "metadata": {
+        "description": "Specifies the name of the resource that is unique within the set of frontend IP configurations used by the load balancer. This name can be used to access the resource."
+      }
+    },
+    "loadBalancerBackendPoolName": {
+      "type": "string",
+      "defaultValue": "BackendPool",
+      "metadata": {
+        "description": "Specifies the name of the resource that is unique within the set of backend address pools used by the load balancer. This name can be used to access the resource."
+      }
+    },
+    "loadBalancerInboundNatRuleName": {
+      "type": "string",
+      "defaultValue": "SSH",
+      "metadata": {
+        "description": "Specifies the name of the inbound NAT rule."
+      }
+    },
+    "loadBalancerInboundNatRuleProtocol": {
+      "type": "string",
+      "defaultValue": "Tcp",
+      "metadata": {
+        "description": "Specifies the protocol of the inbound NAT rule."
+      }
+    },
+    "loadBalancerInboundNatRuleFrontendPort": {
+      "type": "int",
+      "defaultValue": 22,
+      "metadata": {
+        "description": "Specifies the frontend port of the inbound NAT rule."
+      }
+    },
+    "loadBalancerInboundNatRuleBackendPort": {
+      "type": "int",
+      "defaultValue": 22,
+      "metadata": {
+        "description": "Specifies the backend port of the inbound NAT rule."
+      }
+    },
+    "loadBalancingRuleName": {
+      "type": "string",
+      "defaultValue": "Http",
+      "metadata": {
+        "description": "Specifies the name of the load balancing rule."
+      }
+    },
+    "loadBalancingRuleProtocol": {
+      "type": "string",
+      "defaultValue": "Tcp",
+      "metadata": {
+        "description": "Specifies the protocol of the load balancing rule."
+      }
+    },
+    "loadBalancingRuleFrontendPort": {
+      "type": "int",
+      "defaultValue": 80,
+      "metadata": {
+        "description": "Specifies the frontend port of the load balancing rule."
+      }
+    },
+    "loadBalancingRuleBackendPort": {
+      "type": "int",
+      "defaultValue": 80,
+      "metadata": {
+        "description": "Specifies the backend port of the load balancing rule."
+      }
+    },
+    "loadBalancingRuleidleTimeoutInMinutes": {
+      "type": "int",
+      "defaultValue": 15,
+      "metadata": {
+        "description": "Specifies the idle timeout in minutes of the load balancing rule."
+      }
+    },
+    "loadBalancerHealthProbeName": {
+      "type": "string",
+      "defaultValue": "HealthProbe",
+      "metadata": {
+        "description": "Specifies the name of the resource that is unique within the set of probes used by the load balancer. This name can be used to access the resource."
+      }
+    },
+    "loadBalancerHealthProbeProtocol": {
+      "type": "string",
+      "defaultValue": "Tcp",
+      "allowedValues": [
+        "Http",
+        "Https",
+        "Tcp"
+      ],
+      "metadata": {
+        "description": "Specifies the protocol of the endpoint. If Tcp is specified, a received ACK is required for the probe to be successful. If Http or Https is specified, a 200 OK response from the specifies URI is required for the probe to be successful."
+      }
+    },
+    "loadBalancerHealthProbePort": {
+      "type": "int",
+      "defaultValue": 80,
+      "metadata": {
+        "description": "Specifies the port for communicating the probe. Possible values range from 1 to 65535, inclusive."
+      }
+    },
+    "loadBalancerHealthProbeIntervalInSeconds": {
+      "type": "int",
+      "defaultValue": 15,
+      "metadata": {
+        "description": "Specifies the interval, in seconds, for how frequently to probe the endpoint for health status. Typically, the interval is slightly less than half the allocated timeout period (in seconds) which allows two full probes before taking the instance out of rotation. The default value is 15, the minimum value is 5."
+      }
+    },
+    "loadBalancerHealthProbeNumberOfProbes": {
+      "type": "int",
+      "defaultValue": 2,
+      "metadata": {
+        "description": "Specifies the number of probes where if no response, will result in stopping further traffic from being delivered to the endpoint. This values allows endpoints to be taken out of rotation faster or slower than the typical times used in Azure.."
+      }
+    },
+    "privateLinkServiceName": {
+      "type": "string",
+      "defaultValue": "[format('{0}PrivateLinkService', parameters('prefix'))]",
+      "metadata": {
+        "description": "Specifies the name of the Azure Private Link Service."
+      }
+    },
+    "privateLinkServicePrivateEndpointName": {
+      "type": "string",
+      "defaultValue": "[format('{0}PrivateLinkServicePrivateEndpoint', parameters('prefix'))]",
+      "metadata": {
+        "description": "Specifies the name of the Azure Private Endpoint to the Azure Private Link Service."
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "serviceWorkspace",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[parameters('serviceLogAnalyticsWorkspaceName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "sku": {
+            "value": "[parameters('logAnalyticsSku')]"
+          },
+          "retentionInDays": {
+            "value": "[parameters('logAnalyticsRetentionInDays')]"
+          },
+          "tags": {
+            "value": "[parameters('tags')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.7.4.23292",
+              "templateHash": "1900685350354436623"
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "Specifies the name of the Log Analytics workspace."
+              }
+            },
+            "sku": {
+              "type": "string",
+              "defaultValue": "PerNode",
+              "allowedValues": [
+                "Free",
+                "Standalone",
+                "PerNode",
+                "PerGB2018"
+              ],
+              "metadata": {
+                "description": "Specifies the service tier of the workspace: Free, Standalone, PerNode, Per-GB."
+              }
+            },
+            "retentionInDays": {
+              "type": "int",
+              "defaultValue": 60,
+              "metadata": {
+                "description": "Specifies the workspace data retention in days. -1 means Unlimited retention for the Unlimited Sku. 730 days is the maximum allowed for all other Skus."
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Specifies the location."
+              }
+            },
+            "tags": {
+              "type": "object",
+              "metadata": {
+                "description": "Specifies the resource tags."
+              }
+            }
+          },
+          "variables": {
+            "containerInsightsSolutionName": "[format('ContainerInsights({0})', parameters('name'))]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.OperationalInsights/workspaces",
+              "apiVersion": "2021-12-01-preview",
+              "name": "[parameters('name')]",
+              "tags": "[parameters('tags')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "sku": {
+                  "name": "[parameters('sku')]"
+                },
+                "retentionInDays": "[parameters('retentionInDays')]"
+              }
+            },
+            {
+              "type": "Microsoft.OperationsManagement/solutions",
+              "apiVersion": "2015-11-01-preview",
+              "name": "[variables('containerInsightsSolutionName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "plan": {
+                "name": "[variables('containerInsightsSolutionName')]",
+                "promotionCode": "",
+                "product": "OMSGallery/ContainerInsights",
+                "publisher": "Microsoft"
+              },
+              "properties": {
+                "workspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('name'))]",
+                "containedResources": []
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('name'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "id": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('name'))]"
+            },
+            "name": {
+              "type": "string",
+              "value": "[parameters('name')]"
+            },
+            "customerId": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.OperationalInsights/workspaces', parameters('name'))).customerId]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "serviceStorageAccount",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[parameters('serviceBlobStorageAccountName')]"
+          },
+          "createContainers": {
+            "value": true
+          },
+          "containerNames": {
+            "value": [
+              "todoapi",
+              "todoweb"
+            ]
+          },
+          "workspaceId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'serviceWorkspace')).outputs.id.value]"
+          },
+          "retentionInDays": {
+            "value": "[parameters('logAnalyticsRetentionInDays')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "tags": {
+            "value": "[parameters('tags')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.7.4.23292",
+              "templateHash": "13024380283099184394"
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string",
+              "defaultValue": "[format('boot{0}', uniqueString(resourceGroup().id))]",
+              "metadata": {
+                "description": "Specifies the globally unique name for the storage account used to store the boot diagnostics logs of the virtual machine."
+              }
+            },
+            "createContainers": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Specifies whether to create containers."
+              }
+            },
+            "containerNames": {
+              "type": "array",
+              "metadata": {
+                "description": "Specifies an array of containers to create."
+              }
+            },
+            "workspaceId": {
+              "type": "string",
+              "metadata": {
+                "description": "Specifies the resource id of the Log Analytics workspace."
+              }
+            },
+            "retentionInDays": {
+              "type": "int",
+              "defaultValue": 60,
+              "metadata": {
+                "description": "Specifies the workspace data retention in days."
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Specifies the location."
+              }
+            },
+            "tags": {
+              "type": "object",
+              "metadata": {
+                "description": "Specifies the resource tags."
+              }
+            }
+          },
+          "variables": {
+            "copy": [
+              {
+                "name": "logs",
+                "count": "[length(variables('logCategories'))]",
+                "input": {
+                  "category": "[variables('logCategories')[copyIndex('logs')]]",
+                  "enabled": true,
+                  "retentionPolicy": {
+                    "enabled": true,
+                    "days": "[parameters('retentionInDays')]"
+                  }
+                }
+              },
+              {
+                "name": "metrics",
+                "count": "[length(variables('metricCategories'))]",
+                "input": {
+                  "category": "[variables('metricCategories')[copyIndex('metrics')]]",
+                  "enabled": true,
+                  "retentionPolicy": {
+                    "enabled": true,
+                    "days": "[parameters('retentionInDays')]"
+                  }
+                }
+              }
+            ],
+            "diagnosticSettingsName": "diagnosticSettings",
+            "logCategories": [
+              "StorageRead",
+              "StorageWrite",
+              "StorageDelete"
+            ],
+            "metricCategories": [
+              "Transaction"
+            ]
+          },
+          "resources": [
+            {
+              "condition": "[parameters('createContainers')]",
+              "copy": {
+                "name": "containers",
+                "count": "[length(parameters('containerNames'))]"
+              },
+              "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+              "apiVersion": "2021-09-01",
+              "name": "[format('{0}/{1}/{2}', parameters('name'), 'default', parameters('containerNames')[copyIndex()])]",
+              "properties": {
+                "publicAccess": "None"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('name'), 'default')]"
+              ]
+            },
+            {
+              "type": "Microsoft.Storage/storageAccounts/blobServices",
+              "apiVersion": "2021-09-01",
+              "name": "[format('{0}/{1}', parameters('name'), 'default')]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('name'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Storage/storageAccounts",
+              "apiVersion": "2021-09-01",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "sku": {
+                "name": "Standard_LRS"
+              },
+              "kind": "StorageV2"
+            },
+            {
+              "type": "Microsoft.Insights/diagnosticSettings",
+              "apiVersion": "2021-05-01-preview",
+              "scope": "[format('Microsoft.Storage/storageAccounts/{0}/blobServices/{1}', parameters('name'), 'default')]",
+              "name": "[variables('diagnosticSettingsName')]",
+              "properties": {
+                "workspaceId": "[parameters('workspaceId')]",
+                "logs": "[variables('logs')]",
+                "metrics": "[variables('metrics')]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('name'), 'default')]"
+              ]
+            }
+          ],
+          "outputs": {
+            "id": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Storage/storageAccounts', parameters('name'))]"
+            },
+            "name": {
+              "type": "string",
+              "value": "[parameters('name')]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'serviceWorkspace')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "serviceNetwork",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "virtualNetworkName": {
+            "value": "[parameters('serviceVirtualNetworkName')]"
+          },
+          "virtualNetworkAddressPrefixes": {
+            "value": "[parameters('serviceVirtualNetworkAddressPrefixes')]"
+          },
+          "frontendSubnetName": {
+            "value": "[parameters('serviceFrontendSubnetName')]"
+          },
+          "frontendSubnetAddressPrefix": {
+            "value": "[parameters('serviceFrontendSubnetAddressPrefix')]"
+          },
+          "frontendSubnetPrivateEndpointNetworkPolicies": {
+            "value": "[parameters('serviceFrontendSubnetPrivateEndpointNetworkPolicies')]"
+          },
+          "frontendSubnetPrivateLinkServiceNetworkPolicies": {
+            "value": "[parameters('serviceFrontendSubnetPrivateLinkServiceNetworkPolicies')]"
+          },
+          "backendSubnetName": {
+            "value": "[parameters('serviceBackendSubnetName')]"
+          },
+          "backendSubnetAddressPrefix": {
+            "value": "[parameters('serviceBackendSubnetAddressPrefix')]"
+          },
+          "backendSubnetPrivateEndpointNetworkPolicies": {
+            "value": "[parameters('serviceBackendSubnetPrivateEndpointNetworkPolicies')]"
+          },
+          "backendSubnetPrivateLinkServiceNetworkPolicies": {
+            "value": "[parameters('serviceBackendSubnetPrivateLinkServiceNetworkPolicies')]"
+          },
+          "bastionSubnetAddressPrefix": {
+            "value": "[parameters('serviceBastionSubnetAddressPrefix')]"
+          },
+          "backendSubnetNsgName": {
+            "value": "[format('{0}Service{1}Nsg', parameters('prefix'), parameters('serviceBackendSubnetName'))]"
+          },
+          "bastionSubnetNsgName": {
+            "value": "[format('{0}ServiceAzureBastionSubnetNsg', parameters('prefix'))]"
+          },
+          "bastionHostName": {
+            "value": "[parameters('serviceBastionHostName')]"
+          },
+          "natGatewayName": {
+            "value": "[format('{0}ServiceNatGateway', parameters('prefix'))]"
+          },
+          "workspaceId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'serviceWorkspace')).outputs.id.value]"
+          },
+          "retentionInDays": {
+            "value": "[parameters('logAnalyticsRetentionInDays')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "tags": {
+            "value": "[parameters('tags')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.7.4.23292",
+              "templateHash": "12737845626634687833"
+            }
+          },
+          "parameters": {
+            "virtualNetworkName": {
+              "type": "string",
+              "metadata": {
+                "description": "Specifies the name of the virtual network."
+              }
+            },
+            "virtualNetworkAddressPrefixes": {
+              "type": "string",
+              "metadata": {
+                "description": "Specifies the address prefixes of the virtual network."
+              }
+            },
+            "frontendSubnetName": {
+              "type": "string",
+              "defaultValue": "FrontendSubnet",
+              "metadata": {
+                "description": "Specifies the name of the subnet hosting the worker nodes of the AKS cluster."
+              }
+            },
+            "frontendSubnetAddressPrefix": {
+              "type": "string",
+              "metadata": {
+                "description": "Specifies the address prefix of the subnet hosting the worker nodes of the AKS cluster."
+              }
+            },
+            "backendSubnetName": {
+              "type": "string",
+              "defaultValue": "BackendSubnet",
+              "metadata": {
+                "description": "Specifies the name of the subnet which contains the virtual machine."
+              }
+            },
+            "backendSubnetAddressPrefix": {
+              "type": "string",
+              "metadata": {
+                "description": "Specifies the address prefix of the subnet which contains the virtual machine."
+              }
+            },
+            "backendSubnetPrivateEndpointNetworkPolicies": {
+              "type": "string",
+              "defaultValue": "Enabled",
+              "allowedValues": [
+                "Disabled",
+                "Enabled"
+              ],
+              "metadata": {
+                "description": "Enable or Disable apply network policies on private end point in the subnet."
+              }
+            },
+            "backendSubnetPrivateLinkServiceNetworkPolicies": {
+              "type": "string",
+              "defaultValue": "Disabled",
+              "allowedValues": [
+                "Disabled",
+                "Enabled"
+              ],
+              "metadata": {
+                "description": "Enable or Disable apply network policies on private link client in the subnet."
+              }
+            },
+            "frontendSubnetPrivateEndpointNetworkPolicies": {
+              "type": "string",
+              "defaultValue": "Enabled",
+              "allowedValues": [
+                "Disabled",
+                "Enabled"
+              ],
+              "metadata": {
+                "description": "Enable or Disable apply network policies on private end point in the subnet."
+              }
+            },
+            "frontendSubnetPrivateLinkServiceNetworkPolicies": {
+              "type": "string",
+              "defaultValue": "Disabled",
+              "allowedValues": [
+                "Disabled",
+                "Enabled"
+              ],
+              "metadata": {
+                "description": "Enable or Disable apply network policies on private link client in the subnet."
+              }
+            },
+            "backendSubnetNsgName": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Specifies the name of the network security group associated to the subnet hosting the virtual machine."
+              }
+            },
+            "bastionSubnetAddressPrefix": {
+              "type": "string",
+              "metadata": {
+                "description": "Specifies the Bastion subnet IP prefix. This prefix must be within vnet IP prefix address space."
+              }
+            },
+            "bastionSubnetNsgName": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Specifies the name of the network security group associated to the subnet hosting Azure Bastion."
+              }
+            },
+            "bastionHostName": {
+              "type": "string",
+              "metadata": {
+                "description": "Specifies the name of the Azure Bastion resource."
+              }
+            },
+            "bastionHostDisableCopyPaste": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Enable/Disable Copy/Paste feature of the Bastion Host resource."
+              }
+            },
+            "bastionHostEnableFileCopy": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Enable/Disable File Copy feature of the Bastion Host resource."
+              }
+            },
+            "bastionHostEnableIpConnect": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Enable/Disable IP Connect feature of the Bastion Host resource."
+              }
+            },
+            "bastionHostEnableShareableLink": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Enable/Disable Shareable Link of the Bastion Host resource."
+              }
+            },
+            "bastionHostEnableTunneling": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Enable/Disable Tunneling feature of the Bastion Host resource."
+              }
+            },
+            "natGatewayName": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Specifies the name of the NAT Gateway"
+              }
+            },
+            "workspaceId": {
+              "type": "string",
+              "metadata": {
+                "description": "Specifies the resource id of the Log Analytics workspace."
+              }
+            },
+            "retentionInDays": {
+              "type": "int",
+              "defaultValue": 60,
+              "metadata": {
+                "description": "Specifies the workspace data retention in days."
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Specifies the location."
+              }
+            },
+            "tags": {
+              "type": "object",
+              "metadata": {
+                "description": "Specifies the resource tags."
+              }
+            }
+          },
+          "variables": {
+            "copy": [
+              {
+                "name": "nsgLogs",
+                "count": "[length(variables('nsgLogCategories'))]",
+                "input": {
+                  "category": "[variables('nsgLogCategories')[copyIndex('nsgLogs')]]",
+                  "enabled": true,
+                  "retentionPolicy": {
+                    "enabled": true,
+                    "days": "[parameters('retentionInDays')]"
+                  }
+                }
+              },
+              {
+                "name": "vnetLogs",
+                "count": "[length(variables('vnetLogCategories'))]",
+                "input": {
+                  "category": "[variables('vnetLogCategories')[copyIndex('vnetLogs')]]",
+                  "enabled": true,
+                  "retentionPolicy": {
+                    "enabled": true,
+                    "days": "[parameters('retentionInDays')]"
+                  }
+                }
+              },
+              {
+                "name": "vnetMetrics",
+                "count": "[length(variables('vnetMetricCategories'))]",
+                "input": {
+                  "category": "[variables('vnetMetricCategories')[copyIndex('vnetMetrics')]]",
+                  "enabled": true,
+                  "retentionPolicy": {
+                    "enabled": true,
+                    "days": "[parameters('retentionInDays')]"
+                  }
+                }
+              },
+              {
+                "name": "bastionLogs",
+                "count": "[length(variables('bastionLogCategories'))]",
+                "input": {
+                  "category": "[variables('bastionLogCategories')[copyIndex('bastionLogs')]]",
+                  "enabled": true,
+                  "retentionPolicy": {
+                    "enabled": true,
+                    "days": "[parameters('retentionInDays')]"
+                  }
+                }
+              },
+              {
+                "name": "bastionMetrics",
+                "count": "[length(variables('bastionMetricCategories'))]",
+                "input": {
+                  "category": "[variables('bastionMetricCategories')[copyIndex('bastionMetrics')]]",
+                  "enabled": true,
+                  "retentionPolicy": {
+                    "enabled": true,
+                    "days": "[parameters('retentionInDays')]"
+                  }
+                }
+              }
+            ],
+            "diagnosticSettingsName": "diagnosticSettings",
+            "nsgLogCategories": [
+              "NetworkSecurityGroupEvent",
+              "NetworkSecurityGroupRuleCounter"
+            ],
+            "vnetLogCategories": [
+              "VMProtectionAlerts"
+            ],
+            "vnetMetricCategories": [
+              "AllMetrics"
+            ],
+            "bastionLogCategories": [
+              "BastionAuditLogs"
+            ],
+            "bastionMetricCategories": [
+              "AllMetrics"
+            ],
+            "bastionSubnetName": "AzureBastionSubnet",
+            "bastionPublicIpAddressName": "[format('{0}PublicIp', parameters('bastionHostName'))]"
+          },
+          "resources": [
+            {
+              "condition": "[not(empty(parameters('bastionSubnetNsgName')))]",
+              "type": "Microsoft.Network/networkSecurityGroups",
+              "apiVersion": "2021-08-01",
+              "name": "[parameters('bastionSubnetNsgName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "securityRules": [
+                  {
+                    "name": "AllowHttpsInBound",
+                    "properties": {
+                      "protocol": "Tcp",
+                      "sourcePortRange": "*",
+                      "sourceAddressPrefix": "Internet",
+                      "destinationPortRange": "443",
+                      "destinationAddressPrefix": "*",
+                      "access": "Allow",
+                      "priority": 100,
+                      "direction": "Inbound"
+                    }
+                  },
+                  {
+                    "name": "AllowGatewayManagerInBound",
+                    "properties": {
+                      "protocol": "Tcp",
+                      "sourcePortRange": "*",
+                      "sourceAddressPrefix": "GatewayManager",
+                      "destinationPortRange": "443",
+                      "destinationAddressPrefix": "*",
+                      "access": "Allow",
+                      "priority": 110,
+                      "direction": "Inbound"
+                    }
+                  },
+                  {
+                    "name": "AllowLoadBalancerInBound",
+                    "properties": {
+                      "protocol": "Tcp",
+                      "sourcePortRange": "*",
+                      "sourceAddressPrefix": "AzureLoadBalancer",
+                      "destinationPortRange": "443",
+                      "destinationAddressPrefix": "*",
+                      "access": "Allow",
+                      "priority": 120,
+                      "direction": "Inbound"
+                    }
+                  },
+                  {
+                    "name": "AllowBastionHostCommunicationInBound",
+                    "properties": {
+                      "protocol": "*",
+                      "sourcePortRange": "*",
+                      "sourceAddressPrefix": "VirtualNetwork",
+                      "destinationPortRanges": [
+                        "8080",
+                        "5701"
+                      ],
+                      "destinationAddressPrefix": "VirtualNetwork",
+                      "access": "Allow",
+                      "priority": 130,
+                      "direction": "Inbound"
+                    }
+                  },
+                  {
+                    "name": "DenyAllInBound",
+                    "properties": {
+                      "protocol": "*",
+                      "sourcePortRange": "*",
+                      "sourceAddressPrefix": "*",
+                      "destinationPortRange": "*",
+                      "destinationAddressPrefix": "*",
+                      "access": "Deny",
+                      "priority": 1000,
+                      "direction": "Inbound"
+                    }
+                  },
+                  {
+                    "name": "AllowSshRdpOutBound",
+                    "properties": {
+                      "protocol": "Tcp",
+                      "sourcePortRange": "*",
+                      "sourceAddressPrefix": "*",
+                      "destinationPortRanges": [
+                        "22",
+                        "3389"
+                      ],
+                      "destinationAddressPrefix": "VirtualNetwork",
+                      "access": "Allow",
+                      "priority": 100,
+                      "direction": "Outbound"
+                    }
+                  },
+                  {
+                    "name": "AllowAzureCloudCommunicationOutBound",
+                    "properties": {
+                      "protocol": "Tcp",
+                      "sourcePortRange": "*",
+                      "sourceAddressPrefix": "*",
+                      "destinationPortRange": "443",
+                      "destinationAddressPrefix": "AzureCloud",
+                      "access": "Allow",
+                      "priority": 110,
+                      "direction": "Outbound"
+                    }
+                  },
+                  {
+                    "name": "AllowBastionHostCommunicationOutBound",
+                    "properties": {
+                      "protocol": "*",
+                      "sourcePortRange": "*",
+                      "sourceAddressPrefix": "VirtualNetwork",
+                      "destinationPortRanges": [
+                        "8080",
+                        "5701"
+                      ],
+                      "destinationAddressPrefix": "VirtualNetwork",
+                      "access": "Allow",
+                      "priority": 120,
+                      "direction": "Outbound"
+                    }
+                  },
+                  {
+                    "name": "AllowGetSessionInformationOutBound",
+                    "properties": {
+                      "protocol": "*",
+                      "sourcePortRange": "*",
+                      "sourceAddressPrefix": "*",
+                      "destinationAddressPrefix": "Internet",
+                      "destinationPortRanges": [
+                        "80",
+                        "443"
+                      ],
+                      "access": "Allow",
+                      "priority": 130,
+                      "direction": "Outbound"
+                    }
+                  },
+                  {
+                    "name": "DenyAllOutBound",
+                    "properties": {
+                      "protocol": "*",
+                      "sourcePortRange": "*",
+                      "destinationPortRange": "*",
+                      "sourceAddressPrefix": "*",
+                      "destinationAddressPrefix": "*",
+                      "access": "Deny",
+                      "priority": 1000,
+                      "direction": "Outbound"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "condition": "[not(empty(parameters('backendSubnetNsgName')))]",
+              "type": "Microsoft.Network/networkSecurityGroups",
+              "apiVersion": "2021-08-01",
+              "name": "[parameters('backendSubnetNsgName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "securityRules": [
+                  {
+                    "name": "AllowSshInbound",
+                    "properties": {
+                      "priority": 100,
+                      "access": "Allow",
+                      "direction": "Inbound",
+                      "destinationPortRange": "22",
+                      "protocol": "Tcp",
+                      "sourceAddressPrefix": "*",
+                      "sourcePortRange": "*",
+                      "destinationAddressPrefix": "*"
+                    }
+                  },
+                  {
+                    "name": "AllowHttpInbound",
+                    "properties": {
+                      "priority": 200,
+                      "access": "Allow",
+                      "direction": "Inbound",
+                      "destinationPortRange": "80",
+                      "protocol": "Tcp",
+                      "sourceAddressPrefix": "*",
+                      "sourcePortRange": "*",
+                      "destinationAddressPrefix": "*"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "condition": "[not(empty(parameters('natGatewayName')))]",
+              "type": "Microsoft.Network/publicIPAddresses",
+              "apiVersion": "2021-05-01",
+              "name": "[format('{0}PublicIp', parameters('natGatewayName'))]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "Standard"
+              },
+              "properties": {
+                "publicIPAddressVersion": "IPv4",
+                "publicIPAllocationMethod": "Static",
+                "idleTimeoutInMinutes": 4
+              }
+            },
+            {
+              "condition": "[not(empty(parameters('natGatewayName')))]",
+              "type": "Microsoft.Network/natGateways",
+              "apiVersion": "2021-08-01",
+              "name": "[if(not(empty(parameters('natGatewayName'))), parameters('natGatewayName'), 'placeholder')]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "Standard"
+              },
+              "properties": {
+                "idleTimeoutInMinutes": 4,
+                "publicIpAddresses": "[if(empty(parameters('natGatewayName')), createArray(), createArray(createObject('id', resourceId('Microsoft.Network/publicIPAddresses', format('{0}PublicIp', parameters('natGatewayName'))))))]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', format('{0}PublicIp', parameters('natGatewayName')))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Network/virtualNetworks",
+              "apiVersion": "2021-08-01",
+              "name": "[parameters('virtualNetworkName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "addressSpace": {
+                  "addressPrefixes": [
+                    "[parameters('virtualNetworkAddressPrefixes')]"
+                  ]
+                },
+                "subnets": [
+                  {
+                    "name": "[parameters('frontendSubnetName')]",
+                    "properties": {
+                      "addressPrefix": "[parameters('frontendSubnetAddressPrefix')]",
+                      "privateEndpointNetworkPolicies": "[parameters('frontendSubnetPrivateEndpointNetworkPolicies')]",
+                      "privateLinkServiceNetworkPolicies": "[parameters('frontendSubnetPrivateLinkServiceNetworkPolicies')]"
+                    }
+                  },
+                  {
+                    "name": "[parameters('backendSubnetName')]",
+                    "properties": {
+                      "addressPrefix": "[parameters('backendSubnetAddressPrefix')]",
+                      "networkSecurityGroup": "[if(not(empty(parameters('backendSubnetNsgName'))), createObject('id', resourceId('Microsoft.Network/networkSecurityGroups', parameters('backendSubnetNsgName'))), json('null'))]",
+                      "natGateway": "[if(not(empty(parameters('natGatewayName'))), createObject('id', resourceId('Microsoft.Network/natGateways', if(not(empty(parameters('natGatewayName'))), parameters('natGatewayName'), 'placeholder'))), json('null'))]",
+                      "privateEndpointNetworkPolicies": "[parameters('backendSubnetPrivateEndpointNetworkPolicies')]",
+                      "privateLinkServiceNetworkPolicies": "[parameters('backendSubnetPrivateLinkServiceNetworkPolicies')]"
+                    }
+                  },
+                  {
+                    "name": "[variables('bastionSubnetName')]",
+                    "properties": {
+                      "addressPrefix": "[parameters('bastionSubnetAddressPrefix')]",
+                      "networkSecurityGroup": "[if(not(empty(parameters('bastionSubnetNsgName'))), createObject('id', resourceId('Microsoft.Network/networkSecurityGroups', parameters('bastionSubnetNsgName'))), json('null'))]"
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('backendSubnetNsgName'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('bastionSubnetNsgName'))]",
+                "[resourceId('Microsoft.Network/natGateways', if(not(empty(parameters('natGatewayName'))), parameters('natGatewayName'), 'placeholder'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Network/publicIPAddresses",
+              "apiVersion": "2021-08-01",
+              "name": "[variables('bastionPublicIpAddressName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "sku": {
+                "name": "Standard"
+              },
+              "properties": {
+                "publicIPAllocationMethod": "Static"
+              }
+            },
+            {
+              "type": "Microsoft.Network/bastionHosts",
+              "apiVersion": "2021-08-01",
+              "name": "[parameters('bastionHostName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "disableCopyPaste": "[parameters('bastionHostDisableCopyPaste')]",
+                "enableFileCopy": "[parameters('bastionHostEnableFileCopy')]",
+                "enableIpConnect": "[parameters('bastionHostEnableIpConnect')]",
+                "enableShareableLink": "[parameters('bastionHostEnableShareableLink')]",
+                "enableTunneling": "[parameters('bastionHostEnableTunneling')]",
+                "ipConfigurations": [
+                  {
+                    "name": "IpConf",
+                    "properties": {
+                      "subnet": {
+                        "id": "[format('{0}/subnets/{1}', resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName')), variables('bastionSubnetName'))]"
+                      },
+                      "publicIPAddress": {
+                        "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('bastionPublicIpAddressName'))]"
+                      }
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('bastionPublicIpAddressName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Insights/diagnosticSettings",
+              "apiVersion": "2021-05-01-preview",
+              "scope": "[format('Microsoft.Network/networkSecurityGroups/{0}', parameters('backendSubnetNsgName'))]",
+              "name": "[variables('diagnosticSettingsName')]",
+              "properties": {
+                "workspaceId": "[parameters('workspaceId')]",
+                "logs": "[variables('nsgLogs')]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('backendSubnetNsgName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Insights/diagnosticSettings",
+              "apiVersion": "2021-05-01-preview",
+              "scope": "[format('Microsoft.Network/networkSecurityGroups/{0}', parameters('bastionSubnetNsgName'))]",
+              "name": "[variables('diagnosticSettingsName')]",
+              "properties": {
+                "workspaceId": "[parameters('workspaceId')]",
+                "logs": "[variables('nsgLogs')]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('bastionSubnetNsgName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Insights/diagnosticSettings",
+              "apiVersion": "2021-05-01-preview",
+              "scope": "[format('Microsoft.Network/virtualNetworks/{0}', parameters('virtualNetworkName'))]",
+              "name": "[variables('diagnosticSettingsName')]",
+              "properties": {
+                "workspaceId": "[parameters('workspaceId')]",
+                "logs": "[variables('vnetLogs')]",
+                "metrics": "[variables('vnetMetrics')]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Insights/diagnosticSettings",
+              "apiVersion": "2021-05-01-preview",
+              "scope": "[format('Microsoft.Network/bastionHosts/{0}', parameters('bastionHostName'))]",
+              "name": "[variables('diagnosticSettingsName')]",
+              "properties": {
+                "workspaceId": "[parameters('workspaceId')]",
+                "logs": "[variables('bastionLogs')]",
+                "metrics": "[variables('bastionMetrics')]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/bastionHosts', parameters('bastionHostName'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "virtualNetworkId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]"
+            },
+            "virtualNetworkName": {
+              "type": "string",
+              "value": "[parameters('virtualNetworkName')]"
+            },
+            "frontendSubnetId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('frontendSubnetName'))]"
+            },
+            "backendSubnetId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('backendSubnetName'))]"
+            },
+            "bastionSubnetId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), variables('bastionSubnetName'))]"
+            },
+            "frontendSubnetName": {
+              "type": "string",
+              "value": "[parameters('frontendSubnetName')]"
+            },
+            "backendSubnetName": {
+              "type": "string",
+              "value": "[parameters('backendSubnetName')]"
+            },
+            "bastionSubnetName": {
+              "type": "string",
+              "value": "[variables('bastionSubnetName')]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'serviceWorkspace')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "loadBalancer",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[parameters('loadBalancerName')]"
+          },
+          "skuName": {
+            "value": "[parameters('loadBalancerSkuName')]"
+          },
+          "frontEndIpConfigurationName": {
+            "value": "[parameters('loadBalancerFrontEndIpConfigurationName')]"
+          },
+          "backendPoolName": {
+            "value": "[parameters('loadBalancerBackendPoolName')]"
+          },
+          "healthProbeName": {
+            "value": "[parameters('loadBalancerHealthProbeName')]"
+          },
+          "healthProbeProtocol": {
+            "value": "[parameters('loadBalancerHealthProbeProtocol')]"
+          },
+          "healthProbeNumberOfProbes": {
+            "value": "[parameters('loadBalancerHealthProbeNumberOfProbes')]"
+          },
+          "healthProbeIntervalInSeconds": {
+            "value": "[parameters('loadBalancerHealthProbeIntervalInSeconds')]"
+          },
+          "healthProbePort": {
+            "value": "[parameters('loadBalancerHealthProbePort')]"
+          },
+          "inboundNatRuleName": {
+            "value": "[parameters('loadBalancerInboundNatRuleName')]"
+          },
+          "inboundNatRuleProtocol": {
+            "value": "[parameters('loadBalancerInboundNatRuleProtocol')]"
+          },
+          "inboundNatRuleFrontendPort": {
+            "value": "[parameters('loadBalancerInboundNatRuleFrontendPort')]"
+          },
+          "inboundNatRuleBackendPort": {
+            "value": "[parameters('loadBalancerInboundNatRuleBackendPort')]"
+          },
+          "loadBalancingRuleName": {
+            "value": "[parameters('loadBalancingRuleName')]"
+          },
+          "loadBalancingRuleProtocol": {
+            "value": "[parameters('loadBalancingRuleProtocol')]"
+          },
+          "loadBalancingRuleFrontendPort": {
+            "value": "[parameters('loadBalancingRuleFrontendPort')]"
+          },
+          "loadBalancingRuleBackendPort": {
+            "value": "[parameters('loadBalancingRuleBackendPort')]"
+          },
+          "loadBalancingRuleidleTimeoutInMinutes": {
+            "value": "[parameters('loadBalancingRuleidleTimeoutInMinutes')]"
+          },
+          "virtualNetworkName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'serviceNetwork')).outputs.virtualNetworkName.value]"
+          },
+          "subnetName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'serviceNetwork')).outputs.frontendSubnetName.value]"
+          },
+          "workspaceId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'serviceWorkspace')).outputs.id.value]"
+          },
+          "retentionInDays": {
+            "value": "[parameters('logAnalyticsRetentionInDays')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "tags": {
+            "value": "[parameters('tags')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.7.4.23292",
+              "templateHash": "11236271336759525434"
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "Specifies the name of the load balancer"
+              }
+            },
+            "skuName": {
+              "type": "string",
+              "defaultValue": "Standard",
+              "metadata": {
+                "description": "Specifies the sku of the load balancer"
+              }
+            },
+            "frontEndIpConfigurationName": {
+              "type": "string",
+              "defaultValue": "FrontendIp",
+              "metadata": {
+                "description": "Specifies the name of the resource that is unique within the set of frontend IP configurations used by the load balancer. This name can be used to access the resource."
+              }
+            },
+            "backendPoolName": {
+              "type": "string",
+              "defaultValue": "BackendPool",
+              "metadata": {
+                "description": "Specifies the name of the resource that is unique within the set of backend address pools used by the load balancer. This name can be used to access the resource."
+              }
+            },
+            "healthProbeName": {
+              "type": "string",
+              "defaultValue": "HealthProbe",
+              "metadata": {
+                "description": "Specifies the name of the resource that is unique within the set of probes used by the load balancer. This name can be used to access the resource."
+              }
+            },
+            "healthProbeProtocol": {
+              "type": "string",
+              "defaultValue": "Tcp",
+              "allowedValues": [
+                "Http",
+                "Https",
+                "Tcp"
+              ],
+              "metadata": {
+                "description": "Specifies the protocol of the endpoint. If Tcp is specified, a received ACK is required for the probe to be successful. If Http or Https is specified, a 200 OK response from the specifies URI is required for the probe to be successful."
+              }
+            },
+            "healthProbePort": {
+              "type": "int",
+              "defaultValue": 80,
+              "metadata": {
+                "description": "Specifies the port for communicating the probe. Possible values range from 1 to 65535, inclusive."
+              }
+            },
+            "healthProbeIntervalInSeconds": {
+              "type": "int",
+              "defaultValue": 15,
+              "metadata": {
+                "description": "Specifies the interval, in seconds, for how frequently to probe the endpoint for health status. Typically, the interval is slightly less than half the allocated timeout period (in seconds) which allows two full probes before taking the instance out of rotation. The default value is 15, the minimum value is 5."
+              }
+            },
+            "healthProbeNumberOfProbes": {
+              "type": "int",
+              "defaultValue": 2,
+              "metadata": {
+                "description": "Specifies the number of probes where if no response, will result in stopping further traffic from being delivered to the endpoint. This values allows endpoints to be taken out of rotation faster or slower than the typical times used in Azure.."
+              }
+            },
+            "inboundNatRuleName": {
+              "type": "string",
+              "defaultValue": "SSH",
+              "metadata": {
+                "description": "Specifies the name of the inbound NAT rule."
+              }
+            },
+            "inboundNatRuleProtocol": {
+              "type": "string",
+              "defaultValue": "Tcp",
+              "allowedValues": [
+                "All",
+                "Tcp",
+                "Udp"
+              ],
+              "metadata": {
+                "description": "Specifies the protocol of the inbound NAT rule."
+              }
+            },
+            "inboundNatRuleFrontendPort": {
+              "type": "int",
+              "defaultValue": 22,
+              "metadata": {
+                "description": "Specifies the frontend port of the inbound NAT rule."
+              }
+            },
+            "inboundNatRuleBackendPort": {
+              "type": "int",
+              "defaultValue": 22,
+              "metadata": {
+                "description": "Specifies the backend port of the inbound NAT rule."
+              }
+            },
+            "loadBalancingRuleName": {
+              "type": "string",
+              "defaultValue": "Http",
+              "metadata": {
+                "description": "Specifies the name of the load balancing rule."
+              }
+            },
+            "loadBalancingRuleProtocol": {
+              "type": "string",
+              "defaultValue": "Tcp",
+              "metadata": {
+                "description": "Specifies the protocol of the load balancing rule."
+              }
+            },
+            "loadBalancingRuleFrontendPort": {
+              "type": "int",
+              "defaultValue": 80,
+              "metadata": {
+                "description": "Specifies the frontend port of the load balancing rule."
+              }
+            },
+            "loadBalancingRuleBackendPort": {
+              "type": "int",
+              "defaultValue": 80,
+              "metadata": {
+                "description": "Specifies the backend port of the load balancing rule."
+              }
+            },
+            "loadBalancingRuleidleTimeoutInMinutes": {
+              "type": "int",
+              "defaultValue": 15,
+              "metadata": {
+                "description": "Specifies the idle timeout in minutes of the load balancing rule."
+              }
+            },
+            "virtualNetworkName": {
+              "type": "string",
+              "metadata": {
+                "description": "Specifies the name of the virtual network used by the load balancer."
+              }
+            },
+            "subnetName": {
+              "type": "string",
+              "metadata": {
+                "description": "Specifies the name of the subnet used by the load balancer."
+              }
+            },
+            "workspaceId": {
+              "type": "string",
+              "metadata": {
+                "description": "Specifies the resource id of the Log Analytics workspace."
+              }
+            },
+            "retentionInDays": {
+              "type": "int",
+              "defaultValue": 60,
+              "metadata": {
+                "description": "Specifies the workspace data retention in days."
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Specifies the location."
+              }
+            },
+            "tags": {
+              "type": "object",
+              "metadata": {
+                "description": "Specifies the resource tags."
+              }
+            }
+          },
+          "variables": {
+            "copy": [
+              {
+                "name": "loadBalancerMetrics",
+                "count": "[length(variables('loadBalancerMetricCategories'))]",
+                "input": {
+                  "category": "[variables('loadBalancerMetricCategories')[copyIndex('loadBalancerMetrics')]]",
+                  "enabled": true,
+                  "retentionPolicy": {
+                    "enabled": true,
+                    "days": "[parameters('retentionInDays')]"
+                  }
+                }
+              }
+            ],
+            "diagnosticSettingsName": "diagnosticSettings",
+            "loadBalancerMetricCategories": [
+              "AllMetrics"
+            ]
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Network/loadBalancers",
+              "apiVersion": "2021-08-01",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "sku": {
+                "name": "[parameters('skuName')]"
+              },
+              "properties": {
+                "frontendIPConfigurations": [
+                  {
+                    "name": "[parameters('frontEndIpConfigurationName')]",
+                    "properties": {
+                      "privateIPAllocationMethod": "Dynamic",
+                      "subnet": {
+                        "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('subnetName'))]"
+                      }
+                    }
+                  }
+                ],
+                "backendAddressPools": [
+                  {
+                    "name": "[parameters('backendPoolName')]"
+                  }
+                ],
+                "inboundNatRules": [
+                  {
+                    "name": "[parameters('inboundNatRuleName')]",
+                    "properties": {
+                      "frontendIPConfiguration": {
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIpConfigurations', parameters('name'), parameters('frontEndIpConfigurationName'))]"
+                      },
+                      "protocol": "[parameters('inboundNatRuleProtocol')]",
+                      "frontendPort": "[parameters('inboundNatRuleFrontendPort')]",
+                      "backendPort": "[parameters('inboundNatRuleBackendPort')]",
+                      "enableFloatingIP": false
+                    }
+                  }
+                ],
+                "loadBalancingRules": [
+                  {
+                    "name": "[parameters('loadBalancingRuleName')]",
+                    "properties": {
+                      "frontendIPConfiguration": {
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIpConfigurations', parameters('name'), parameters('frontEndIpConfigurationName'))]"
+                      },
+                      "backendAddressPool": {
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', parameters('name'), parameters('backendPoolName'))]"
+                      },
+                      "probe": {
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/probes', parameters('name'), parameters('healthProbeName'))]"
+                      },
+                      "protocol": "[parameters('loadBalancingRuleProtocol')]",
+                      "frontendPort": "[parameters('loadBalancingRuleFrontendPort')]",
+                      "backendPort": "[parameters('loadBalancingRuleBackendPort')]",
+                      "idleTimeoutInMinutes": "[parameters('loadBalancingRuleidleTimeoutInMinutes')]"
+                    }
+                  }
+                ],
+                "probes": [
+                  {
+                    "properties": {
+                      "protocol": "[parameters('healthProbeProtocol')]",
+                      "port": "[parameters('healthProbePort')]",
+                      "intervalInSeconds": "[parameters('healthProbeIntervalInSeconds')]",
+                      "numberOfProbes": "[parameters('healthProbeNumberOfProbes')]"
+                    },
+                    "name": "[parameters('healthProbeName')]"
+                  }
+                ]
+              }
+            },
+            {
+              "type": "Microsoft.Insights/diagnosticSettings",
+              "apiVersion": "2021-05-01-preview",
+              "scope": "[format('Microsoft.Network/loadBalancers/{0}', parameters('name'))]",
+              "name": "[variables('diagnosticSettingsName')]",
+              "properties": {
+                "workspaceId": "[parameters('workspaceId')]",
+                "metrics": "[variables('loadBalancerMetrics')]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/loadBalancers', parameters('name'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "id": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/loadBalancers', parameters('name'))]"
+            },
+            "name": {
+              "type": "string",
+              "value": "[parameters('name')]"
+            },
+            "properties": {
+              "type": "object",
+              "value": "[reference(resourceId('Microsoft.Network/loadBalancers', parameters('name')))]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'serviceNetwork')]",
+        "[resourceId('Microsoft.Resources/deployments', 'serviceWorkspace')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "serviceVirtualMachine",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "vmName": {
+            "value": "[parameters('serviceVmName')]"
+          },
+          "vmSize": {
+            "value": "[parameters('serviceVmSize')]"
+          },
+          "vmSubnetId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'serviceNetwork')).outputs.backendSubnetId.value]"
+          },
+          "storageAccountName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'serviceStorageAccount')).outputs.name.value]"
+          },
+          "imagePublisher": {
+            "value": "[parameters('imagePublisher')]"
+          },
+          "imageOffer": {
+            "value": "[parameters('imageOffer')]"
+          },
+          "imageSku": {
+            "value": "[parameters('imageSku')]"
+          },
+          "authenticationType": {
+            "value": "[parameters('authenticationType')]"
+          },
+          "vmAdminUsername": {
+            "value": "[parameters('vmAdminUsername')]"
+          },
+          "vmAdminPasswordOrKey": {
+            "value": "[parameters('vmAdminPasswordOrKey')]"
+          },
+          "loadBalancerName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'loadBalancer')).outputs.name.value]"
+          },
+          "diskStorageAccountType": {
+            "value": "[parameters('diskStorageAccountType')]"
+          },
+          "numDataDisks": {
+            "value": "[parameters('numDataDisks')]"
+          },
+          "osDiskSize": {
+            "value": "[parameters('osDiskSize')]"
+          },
+          "dataDiskSize": {
+            "value": "[parameters('dataDiskSize')]"
+          },
+          "dataDiskCaching": {
+            "value": "[parameters('dataDiskCaching')]"
+          },
+          "scriptFilePath": {
+            "value": "[parameters('scriptFilePath')]"
+          },
+          "scriptFileName": {
+            "value": "[parameters('scriptFileName')]"
+          },
+          "workspaceName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'serviceWorkspace')).outputs.name.value]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "tags": {
+            "value": "[parameters('tags')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.7.4.23292",
+              "templateHash": "12951054669513726199"
+            }
+          },
+          "parameters": {
+            "vmName": {
+              "type": "string",
+              "defaultValue": "TestVm",
+              "metadata": {
+                "description": "Specifies the name of the virtual machine."
+              }
+            },
+            "vmSize": {
+              "type": "string",
+              "defaultValue": "Standard_DS3_v2",
+              "metadata": {
+                "description": "Specifies the size of the virtual machine."
+              }
+            },
+            "vmSubnetId": {
+              "type": "string",
+              "metadata": {
+                "description": "Specifies the resource id of the subnet hosting the virtual machine."
+              }
+            },
+            "storageAccountName": {
+              "type": "string",
+              "metadata": {
+                "description": "Specifies the name of the storage account where the bootstrap diagnostic logs of the virtual machine are stored."
+              }
+            },
+            "imagePublisher": {
+              "type": "string",
+              "defaultValue": "Canonical",
+              "metadata": {
+                "description": "Specifies the image publisher of the disk image used to create the virtual machine."
+              }
+            },
+            "imageOffer": {
+              "type": "string",
+              "defaultValue": "UbuntuServer",
+              "metadata": {
+                "description": "Specifies the offer of the platform image or marketplace image used to create the virtual machine."
+              }
+            },
+            "imageSku": {
+              "type": "string",
+              "defaultValue": "18.04-LTS",
+              "metadata": {
+                "description": "Specifies the Ubuntu version for the VM. This will pick a fully patched image of this given Ubuntu version."
+              }
+            },
+            "authenticationType": {
+              "type": "string",
+              "defaultValue": "password",
+              "allowedValues": [
+                "sshPublicKey",
+                "password"
+              ],
+              "metadata": {
+                "description": "Specifies the type of authentication when accessing the Virtual Machine. SSH key is recommended."
+              }
+            },
+            "vmAdminUsername": {
+              "type": "string",
+              "metadata": {
+                "description": "Specifies the name of the administrator account of the virtual machine."
+              }
+            },
+            "vmAdminPasswordOrKey": {
+              "type": "secureString",
+              "metadata": {
+                "description": "Specifies the SSH Key or password for the virtual machine. SSH key is recommended."
+              }
+            },
+            "diskStorageAccountType": {
+              "type": "string",
+              "defaultValue": "Premium_LRS",
+              "allowedValues": [
+                "Premium_LRS",
+                "StandardSSD_LRS",
+                "Standard_LRS",
+                "UltraSSD_LRS"
+              ],
+              "metadata": {
+                "description": "Specifies the storage account type for OS and data disk."
+              }
+            },
+            "numDataDisks": {
+              "type": "int",
+              "defaultValue": 1,
+              "maxValue": 64,
+              "minValue": 0,
+              "metadata": {
+                "description": "Specifies the number of data disks of the virtual machine."
+              }
+            },
+            "osDiskSize": {
+              "type": "int",
+              "defaultValue": 50,
+              "metadata": {
+                "description": "Specifies the size in GB of the OS disk of the VM."
+              }
+            },
+            "dataDiskSize": {
+              "type": "int",
+              "defaultValue": 50,
+              "metadata": {
+                "description": "Specifies the size in GB of the OS disk of the virtual machine."
+              }
+            },
+            "dataDiskCaching": {
+              "type": "string",
+              "defaultValue": "ReadWrite",
+              "metadata": {
+                "description": "Specifies the caching requirements for the data disks."
+              }
+            },
+            "scriptFilePath": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Specifies the relative path of the scripts used to initialize the virtual machine."
+              }
+            },
+            "scriptFileName": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Specifies the script to download from the URI specified by the scriptFilePath parameter."
+              }
+            },
+            "loadBalancerName": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Specifies the name of the load balancer."
+              }
+            },
+            "workspaceName": {
+              "type": "string",
+              "metadata": {
+                "description": "Specifies the name of the Log Analytics workspace."
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Specifies the location."
+              }
+            },
+            "tags": {
+              "type": "object",
+              "metadata": {
+                "description": "Specifies the resource tags."
+              }
+            }
+          },
+          "variables": {
+            "vmNicName": "[format('{0}Nic', parameters('vmName'))]",
+            "scriptFileUri": "[format('{0}/{1}', parameters('scriptFilePath'), parameters('scriptFileName'))]",
+            "linuxConfiguration": {
+              "disablePasswordAuthentication": true,
+              "ssh": {
+                "publicKeys": [
+                  {
+                    "path": "[format('/home/{0}/.ssh/authorized_keys', parameters('vmAdminUsername'))]",
+                    "keyData": "[parameters('vmAdminPasswordOrKey')]"
+                  }
+                ]
+              },
+              "provisionVMAgent": true
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Network/networkInterfaces",
+              "apiVersion": "2021-08-01",
+              "name": "[variables('vmNicName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "ipConfigurations": [
+                  {
+                    "name": "ipconfig1",
+                    "properties": {
+                      "privateIPAllocationMethod": "Dynamic",
+                      "subnet": {
+                        "id": "[parameters('vmSubnetId')]"
+                      },
+                      "loadBalancerBackendAddressPools": "[if(empty(parameters('loadBalancerName')), createArray(), createArray(createObject('id', reference(resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancerName')), '2021-08-01').backendAddressPools[0].id)))]",
+                      "loadBalancerInboundNatRules": "[if(empty(parameters('loadBalancerName')), createArray(), createArray(createObject('id', reference(resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancerName')), '2021-08-01').inboundNatRules[0].id)))]"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "Microsoft.Compute/virtualMachines",
+              "apiVersion": "2021-11-01",
+              "name": "[parameters('vmName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "hardwareProfile": {
+                  "vmSize": "[parameters('vmSize')]"
+                },
+                "osProfile": {
+                  "computerName": "[parameters('vmName')]",
+                  "adminUsername": "[parameters('vmAdminUsername')]",
+                  "adminPassword": "[parameters('vmAdminPasswordOrKey')]",
+                  "linuxConfiguration": "[if(equals(parameters('authenticationType'), 'password'), json('null'), variables('linuxConfiguration'))]"
+                },
+                "storageProfile": {
+                  "copy": [
+                    {
+                      "name": "dataDisks",
+                      "count": "[length(range(0, parameters('numDataDisks')))]",
+                      "input": {
+                        "caching": "[parameters('dataDiskCaching')]",
+                        "diskSizeGB": "[parameters('dataDiskSize')]",
+                        "lun": "[range(0, parameters('numDataDisks'))[copyIndex('dataDisks')]]",
+                        "name": "[format('{0}-DataDisk{1}', parameters('vmName'), range(0, parameters('numDataDisks'))[copyIndex('dataDisks')])]",
+                        "createOption": "Empty",
+                        "managedDisk": {
+                          "storageAccountType": "[parameters('diskStorageAccountType')]"
+                        }
+                      }
+                    }
+                  ],
+                  "imageReference": {
+                    "publisher": "[parameters('imagePublisher')]",
+                    "offer": "[parameters('imageOffer')]",
+                    "sku": "[parameters('imageSku')]",
+                    "version": "latest"
+                  },
+                  "osDisk": {
+                    "name": "[format('{0}_OSDisk', parameters('vmName'))]",
+                    "caching": "ReadWrite",
+                    "createOption": "FromImage",
+                    "diskSizeGB": "[parameters('osDiskSize')]",
+                    "managedDisk": {
+                      "storageAccountType": "[parameters('diskStorageAccountType')]"
+                    }
+                  }
+                },
+                "networkProfile": {
+                  "networkInterfaces": [
+                    {
+                      "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('vmNicName'))]"
+                    }
+                  ]
+                },
+                "diagnosticsProfile": {
+                  "bootDiagnostics": {
+                    "enabled": true,
+                    "storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2021-09-01').primaryEndpoints.blob]"
+                  }
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('vmNicName'))]"
+              ]
+            },
+            {
+              "condition": "[and(not(empty(parameters('scriptFilePath'))), not(empty(parameters('scriptFileName'))))]",
+              "type": "Microsoft.Compute/virtualMachines/extensions",
+              "apiVersion": "2021-11-01",
+              "name": "[format('{0}/{1}', parameters('vmName'), 'CustomScript')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "2.0",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                  "skipDos2Unix": false,
+                  "timestamp": 123456789,
+                  "fileUris": [
+                    "[variables('scriptFileUri')]"
+                  ]
+                },
+                "protectedSettings": {
+                  "commandToExecute": "[format('bash {0}', parameters('scriptFileName'))]"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Compute/virtualMachines/extensions",
+              "apiVersion": "2021-11-01",
+              "name": "[format('{0}/{1}', parameters('vmName'), 'LogAnalytics')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "publisher": "Microsoft.EnterpriseCloud.Monitoring",
+                "type": "OmsAgentForLinux",
+                "typeHandlerVersion": "1.12",
+                "settings": {
+                  "workspaceId": "[reference(resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName')), '2021-12-01-preview').customerId]",
+                  "stopOnMultipleConnections": false
+                },
+                "protectedSettings": {
+                  "workspaceKey": "[listKeys(resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName')), '2021-12-01-preview').primarySharedKey]"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('vmName'), 'CustomScript')]",
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Compute/virtualMachines/extensions",
+              "apiVersion": "2020-06-01",
+              "name": "[format('{0}/{1}', parameters('vmName'), 'DependencyAgent')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "publisher": "Microsoft.Azure.Monitoring.DependencyAgent",
+                "type": "DependencyAgentLinux",
+                "typeHandlerVersion": "9.10",
+                "autoUpgradeMinorVersion": true
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('vmName'), 'CustomScript')]",
+                "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('vmName'), 'LogAnalytics')]",
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]"
+              ]
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'loadBalancer')]",
+        "[resourceId('Microsoft.Resources/deployments', 'serviceStorageAccount')]",
+        "[resourceId('Microsoft.Resources/deployments', 'serviceNetwork')]",
+        "[resourceId('Microsoft.Resources/deployments', 'serviceWorkspace')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "privateLinkService",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "loadBalancerName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'loadBalancer')).outputs.name.value]"
+          },
+          "privateEndpointName": {
+            "value": "[parameters('privateLinkServicePrivateEndpointName')]"
+          },
+          "privatelinkServiceName": {
+            "value": "[parameters('privateLinkServiceName')]"
+          },
+          "virtualNetworkName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'clientNetwork')).outputs.virtualNetworkName.value]"
+          },
+          "subnetName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'clientNetwork')).outputs.frontendSubnetName.value]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "tags": {
+            "value": "[parameters('tags')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.7.4.23292",
+              "templateHash": "4043812045965886070"
+            }
+          },
+          "parameters": {
+            "privatelinkServiceName": {
+              "type": "string",
+              "metadata": {
+                "description": "Specifies the name of the Azure Private Link Service."
+              }
+            },
+            "privateEndpointName": {
+              "type": "string",
+              "metadata": {
+                "description": "Specifies the name of the Azure Private Endpoint."
+              }
+            },
+            "loadBalancerName": {
+              "type": "string",
+              "metadata": {
+                "description": "Specifies the name of the load balancer."
+              }
+            },
+            "virtualNetworkName": {
+              "type": "string",
+              "metadata": {
+                "description": "Specifies the name of the client virtual network."
+              }
+            },
+            "subnetName": {
+              "type": "string",
+              "metadata": {
+                "description": "Specifies the name of the subnet used by the load balancer."
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Specifies the location."
+              }
+            },
+            "tags": {
+              "type": "object",
+              "metadata": {
+                "description": "Specifies the resource tags."
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Network/privateLinkServices",
+              "apiVersion": "2021-05-01",
+              "name": "[parameters('privatelinkServiceName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "enableProxyProtocol": false,
+                "loadBalancerFrontendIpConfigurations": [
+                  {
+                    "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIpConfigurations', parameters('loadBalancerName'), reference(resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancerName')), '2021-08-01').frontendIPConfigurations[0].name)]"
+                  }
+                ],
+                "ipConfigurations": [
+                  {
+                    "name": "ipConfig",
+                    "properties": {
+                      "privateIPAllocationMethod": "Dynamic",
+                      "privateIPAddressVersion": "IPv4",
+                      "subnet": {
+                        "id": "[reference(resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancerName')), '2021-08-01').frontendIPConfigurations[0].properties.subnet.id]"
+                      },
+                      "primary": false
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "Microsoft.Network/privateEndpoints",
+              "apiVersion": "2021-05-01",
+              "name": "[parameters('privateEndpointName')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "subnet": {
+                  "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('subnetName'))]"
+                },
+                "privateLinkServiceConnections": [
+                  {
+                    "name": "[parameters('privateEndpointName')]",
+                    "properties": {
+                      "privateLinkServiceId": "[resourceId('Microsoft.Network/privateLinkServices', parameters('privatelinkServiceName'))]"
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/privateLinkServices', parameters('privatelinkServiceName'))]"
+              ]
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'clientNetwork')]",
+        "[resourceId('Microsoft.Resources/deployments', 'loadBalancer')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "clientWorkspace",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[parameters('clientLogAnalyticsWorkspaceName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "sku": {
+            "value": "[parameters('logAnalyticsSku')]"
+          },
+          "retentionInDays": {
+            "value": "[parameters('logAnalyticsRetentionInDays')]"
+          },
+          "tags": {
+            "value": "[parameters('tags')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.7.4.23292",
+              "templateHash": "1900685350354436623"
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "Specifies the name of the Log Analytics workspace."
+              }
+            },
+            "sku": {
+              "type": "string",
+              "defaultValue": "PerNode",
+              "allowedValues": [
+                "Free",
+                "Standalone",
+                "PerNode",
+                "PerGB2018"
+              ],
+              "metadata": {
+                "description": "Specifies the service tier of the workspace: Free, Standalone, PerNode, Per-GB."
+              }
+            },
+            "retentionInDays": {
+              "type": "int",
+              "defaultValue": 60,
+              "metadata": {
+                "description": "Specifies the workspace data retention in days. -1 means Unlimited retention for the Unlimited Sku. 730 days is the maximum allowed for all other Skus."
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Specifies the location."
+              }
+            },
+            "tags": {
+              "type": "object",
+              "metadata": {
+                "description": "Specifies the resource tags."
+              }
+            }
+          },
+          "variables": {
+            "containerInsightsSolutionName": "[format('ContainerInsights({0})', parameters('name'))]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.OperationalInsights/workspaces",
+              "apiVersion": "2021-12-01-preview",
+              "name": "[parameters('name')]",
+              "tags": "[parameters('tags')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "sku": {
+                  "name": "[parameters('sku')]"
+                },
+                "retentionInDays": "[parameters('retentionInDays')]"
+              }
+            },
+            {
+              "type": "Microsoft.OperationsManagement/solutions",
+              "apiVersion": "2015-11-01-preview",
+              "name": "[variables('containerInsightsSolutionName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "plan": {
+                "name": "[variables('containerInsightsSolutionName')]",
+                "promotionCode": "",
+                "product": "OMSGallery/ContainerInsights",
+                "publisher": "Microsoft"
+              },
+              "properties": {
+                "workspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('name'))]",
+                "containedResources": []
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('name'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "id": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('name'))]"
+            },
+            "name": {
+              "type": "string",
+              "value": "[parameters('name')]"
+            },
+            "customerId": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.OperationalInsights/workspaces', parameters('name'))).customerId]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "clientStorageAccount",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "name": {
+            "value": "[parameters('clientBlobStorageAccountName')]"
+          },
+          "createContainers": {
+            "value": true
+          },
+          "containerNames": {
+            "value": [
+              "todoapi",
+              "todoweb"
+            ]
+          },
+          "workspaceId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'clientWorkspace')).outputs.id.value]"
+          },
+          "retentionInDays": {
+            "value": "[parameters('logAnalyticsRetentionInDays')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "tags": {
+            "value": "[parameters('tags')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.7.4.23292",
+              "templateHash": "13024380283099184394"
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string",
+              "defaultValue": "[format('boot{0}', uniqueString(resourceGroup().id))]",
+              "metadata": {
+                "description": "Specifies the globally unique name for the storage account used to store the boot diagnostics logs of the virtual machine."
+              }
+            },
+            "createContainers": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Specifies whether to create containers."
+              }
+            },
+            "containerNames": {
+              "type": "array",
+              "metadata": {
+                "description": "Specifies an array of containers to create."
+              }
+            },
+            "workspaceId": {
+              "type": "string",
+              "metadata": {
+                "description": "Specifies the resource id of the Log Analytics workspace."
+              }
+            },
+            "retentionInDays": {
+              "type": "int",
+              "defaultValue": 60,
+              "metadata": {
+                "description": "Specifies the workspace data retention in days."
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Specifies the location."
+              }
+            },
+            "tags": {
+              "type": "object",
+              "metadata": {
+                "description": "Specifies the resource tags."
+              }
+            }
+          },
+          "variables": {
+            "copy": [
+              {
+                "name": "logs",
+                "count": "[length(variables('logCategories'))]",
+                "input": {
+                  "category": "[variables('logCategories')[copyIndex('logs')]]",
+                  "enabled": true,
+                  "retentionPolicy": {
+                    "enabled": true,
+                    "days": "[parameters('retentionInDays')]"
+                  }
+                }
+              },
+              {
+                "name": "metrics",
+                "count": "[length(variables('metricCategories'))]",
+                "input": {
+                  "category": "[variables('metricCategories')[copyIndex('metrics')]]",
+                  "enabled": true,
+                  "retentionPolicy": {
+                    "enabled": true,
+                    "days": "[parameters('retentionInDays')]"
+                  }
+                }
+              }
+            ],
+            "diagnosticSettingsName": "diagnosticSettings",
+            "logCategories": [
+              "StorageRead",
+              "StorageWrite",
+              "StorageDelete"
+            ],
+            "metricCategories": [
+              "Transaction"
+            ]
+          },
+          "resources": [
+            {
+              "condition": "[parameters('createContainers')]",
+              "copy": {
+                "name": "containers",
+                "count": "[length(parameters('containerNames'))]"
+              },
+              "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+              "apiVersion": "2021-09-01",
+              "name": "[format('{0}/{1}/{2}', parameters('name'), 'default', parameters('containerNames')[copyIndex()])]",
+              "properties": {
+                "publicAccess": "None"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('name'), 'default')]"
+              ]
+            },
+            {
+              "type": "Microsoft.Storage/storageAccounts/blobServices",
+              "apiVersion": "2021-09-01",
+              "name": "[format('{0}/{1}', parameters('name'), 'default')]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('name'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Storage/storageAccounts",
+              "apiVersion": "2021-09-01",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "sku": {
+                "name": "Standard_LRS"
+              },
+              "kind": "StorageV2"
+            },
+            {
+              "type": "Microsoft.Insights/diagnosticSettings",
+              "apiVersion": "2021-05-01-preview",
+              "scope": "[format('Microsoft.Storage/storageAccounts/{0}/blobServices/{1}', parameters('name'), 'default')]",
+              "name": "[variables('diagnosticSettingsName')]",
+              "properties": {
+                "workspaceId": "[parameters('workspaceId')]",
+                "logs": "[variables('logs')]",
+                "metrics": "[variables('metrics')]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('name'), 'default')]"
+              ]
+            }
+          ],
+          "outputs": {
+            "id": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Storage/storageAccounts', parameters('name'))]"
+            },
+            "name": {
+              "type": "string",
+              "value": "[parameters('name')]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'clientWorkspace')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "clientNetwork",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "virtualNetworkName": {
+            "value": "[parameters('clientVirtualNetworkName')]"
+          },
+          "virtualNetworkAddressPrefixes": {
+            "value": "[parameters('clientVirtualNetworkAddressPrefixes')]"
+          },
+          "frontendSubnetName": {
+            "value": "[parameters('clientFrontendSubnetName')]"
+          },
+          "frontendSubnetAddressPrefix": {
+            "value": "[parameters('clientFrontendSubnetAddressPrefix')]"
+          },
+          "frontendSubnetPrivateEndpointNetworkPolicies": {
+            "value": "[parameters('clientFrontendSubnetPrivateEndpointNetworkPolicies')]"
+          },
+          "frontendSubnetPrivateLinkServiceNetworkPolicies": {
+            "value": "[parameters('clientFrontendSubnetPrivateLinkServiceNetworkPolicies')]"
+          },
+          "backendSubnetName": {
+            "value": "[parameters('clientBackendSubnetName')]"
+          },
+          "backendSubnetAddressPrefix": {
+            "value": "[parameters('clientBackendSubnetAddressPrefix')]"
+          },
+          "backendSubnetPrivateEndpointNetworkPolicies": {
+            "value": "[parameters('clientBackendSubnetPrivateEndpointNetworkPolicies')]"
+          },
+          "backendSubnetPrivateLinkServiceNetworkPolicies": {
+            "value": "[parameters('clientBackendSubnetPrivateLinkServiceNetworkPolicies')]"
+          },
+          "bastionSubnetAddressPrefix": {
+            "value": "[parameters('clientBastionSubnetAddressPrefix')]"
+          },
+          "backendSubnetNsgName": {
+            "value": "[format('{0}Client{1}Nsg', parameters('prefix'), parameters('clientBackendSubnetName'))]"
+          },
+          "bastionSubnetNsgName": {
+            "value": "[format('{0}ClientAzureBastionSubnetNsg', parameters('prefix'))]"
+          },
+          "bastionHostName": {
+            "value": "[parameters('clientBastionHostName')]"
+          },
+          "workspaceId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'clientWorkspace')).outputs.id.value]"
+          },
+          "retentionInDays": {
+            "value": "[parameters('logAnalyticsRetentionInDays')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "tags": {
+            "value": "[parameters('tags')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.7.4.23292",
+              "templateHash": "12737845626634687833"
+            }
+          },
+          "parameters": {
+            "virtualNetworkName": {
+              "type": "string",
+              "metadata": {
+                "description": "Specifies the name of the virtual network."
+              }
+            },
+            "virtualNetworkAddressPrefixes": {
+              "type": "string",
+              "metadata": {
+                "description": "Specifies the address prefixes of the virtual network."
+              }
+            },
+            "frontendSubnetName": {
+              "type": "string",
+              "defaultValue": "FrontendSubnet",
+              "metadata": {
+                "description": "Specifies the name of the subnet hosting the worker nodes of the AKS cluster."
+              }
+            },
+            "frontendSubnetAddressPrefix": {
+              "type": "string",
+              "metadata": {
+                "description": "Specifies the address prefix of the subnet hosting the worker nodes of the AKS cluster."
+              }
+            },
+            "backendSubnetName": {
+              "type": "string",
+              "defaultValue": "BackendSubnet",
+              "metadata": {
+                "description": "Specifies the name of the subnet which contains the virtual machine."
+              }
+            },
+            "backendSubnetAddressPrefix": {
+              "type": "string",
+              "metadata": {
+                "description": "Specifies the address prefix of the subnet which contains the virtual machine."
+              }
+            },
+            "backendSubnetPrivateEndpointNetworkPolicies": {
+              "type": "string",
+              "defaultValue": "Enabled",
+              "allowedValues": [
+                "Disabled",
+                "Enabled"
+              ],
+              "metadata": {
+                "description": "Enable or Disable apply network policies on private end point in the subnet."
+              }
+            },
+            "backendSubnetPrivateLinkServiceNetworkPolicies": {
+              "type": "string",
+              "defaultValue": "Disabled",
+              "allowedValues": [
+                "Disabled",
+                "Enabled"
+              ],
+              "metadata": {
+                "description": "Enable or Disable apply network policies on private link client in the subnet."
+              }
+            },
+            "frontendSubnetPrivateEndpointNetworkPolicies": {
+              "type": "string",
+              "defaultValue": "Enabled",
+              "allowedValues": [
+                "Disabled",
+                "Enabled"
+              ],
+              "metadata": {
+                "description": "Enable or Disable apply network policies on private end point in the subnet."
+              }
+            },
+            "frontendSubnetPrivateLinkServiceNetworkPolicies": {
+              "type": "string",
+              "defaultValue": "Disabled",
+              "allowedValues": [
+                "Disabled",
+                "Enabled"
+              ],
+              "metadata": {
+                "description": "Enable or Disable apply network policies on private link client in the subnet."
+              }
+            },
+            "backendSubnetNsgName": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Specifies the name of the network security group associated to the subnet hosting the virtual machine."
+              }
+            },
+            "bastionSubnetAddressPrefix": {
+              "type": "string",
+              "metadata": {
+                "description": "Specifies the Bastion subnet IP prefix. This prefix must be within vnet IP prefix address space."
+              }
+            },
+            "bastionSubnetNsgName": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Specifies the name of the network security group associated to the subnet hosting Azure Bastion."
+              }
+            },
+            "bastionHostName": {
+              "type": "string",
+              "metadata": {
+                "description": "Specifies the name of the Azure Bastion resource."
+              }
+            },
+            "bastionHostDisableCopyPaste": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Enable/Disable Copy/Paste feature of the Bastion Host resource."
+              }
+            },
+            "bastionHostEnableFileCopy": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Enable/Disable File Copy feature of the Bastion Host resource."
+              }
+            },
+            "bastionHostEnableIpConnect": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Enable/Disable IP Connect feature of the Bastion Host resource."
+              }
+            },
+            "bastionHostEnableShareableLink": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Enable/Disable Shareable Link of the Bastion Host resource."
+              }
+            },
+            "bastionHostEnableTunneling": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Enable/Disable Tunneling feature of the Bastion Host resource."
+              }
+            },
+            "natGatewayName": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Specifies the name of the NAT Gateway"
+              }
+            },
+            "workspaceId": {
+              "type": "string",
+              "metadata": {
+                "description": "Specifies the resource id of the Log Analytics workspace."
+              }
+            },
+            "retentionInDays": {
+              "type": "int",
+              "defaultValue": 60,
+              "metadata": {
+                "description": "Specifies the workspace data retention in days."
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Specifies the location."
+              }
+            },
+            "tags": {
+              "type": "object",
+              "metadata": {
+                "description": "Specifies the resource tags."
+              }
+            }
+          },
+          "variables": {
+            "copy": [
+              {
+                "name": "nsgLogs",
+                "count": "[length(variables('nsgLogCategories'))]",
+                "input": {
+                  "category": "[variables('nsgLogCategories')[copyIndex('nsgLogs')]]",
+                  "enabled": true,
+                  "retentionPolicy": {
+                    "enabled": true,
+                    "days": "[parameters('retentionInDays')]"
+                  }
+                }
+              },
+              {
+                "name": "vnetLogs",
+                "count": "[length(variables('vnetLogCategories'))]",
+                "input": {
+                  "category": "[variables('vnetLogCategories')[copyIndex('vnetLogs')]]",
+                  "enabled": true,
+                  "retentionPolicy": {
+                    "enabled": true,
+                    "days": "[parameters('retentionInDays')]"
+                  }
+                }
+              },
+              {
+                "name": "vnetMetrics",
+                "count": "[length(variables('vnetMetricCategories'))]",
+                "input": {
+                  "category": "[variables('vnetMetricCategories')[copyIndex('vnetMetrics')]]",
+                  "enabled": true,
+                  "retentionPolicy": {
+                    "enabled": true,
+                    "days": "[parameters('retentionInDays')]"
+                  }
+                }
+              },
+              {
+                "name": "bastionLogs",
+                "count": "[length(variables('bastionLogCategories'))]",
+                "input": {
+                  "category": "[variables('bastionLogCategories')[copyIndex('bastionLogs')]]",
+                  "enabled": true,
+                  "retentionPolicy": {
+                    "enabled": true,
+                    "days": "[parameters('retentionInDays')]"
+                  }
+                }
+              },
+              {
+                "name": "bastionMetrics",
+                "count": "[length(variables('bastionMetricCategories'))]",
+                "input": {
+                  "category": "[variables('bastionMetricCategories')[copyIndex('bastionMetrics')]]",
+                  "enabled": true,
+                  "retentionPolicy": {
+                    "enabled": true,
+                    "days": "[parameters('retentionInDays')]"
+                  }
+                }
+              }
+            ],
+            "diagnosticSettingsName": "diagnosticSettings",
+            "nsgLogCategories": [
+              "NetworkSecurityGroupEvent",
+              "NetworkSecurityGroupRuleCounter"
+            ],
+            "vnetLogCategories": [
+              "VMProtectionAlerts"
+            ],
+            "vnetMetricCategories": [
+              "AllMetrics"
+            ],
+            "bastionLogCategories": [
+              "BastionAuditLogs"
+            ],
+            "bastionMetricCategories": [
+              "AllMetrics"
+            ],
+            "bastionSubnetName": "AzureBastionSubnet",
+            "bastionPublicIpAddressName": "[format('{0}PublicIp', parameters('bastionHostName'))]"
+          },
+          "resources": [
+            {
+              "condition": "[not(empty(parameters('bastionSubnetNsgName')))]",
+              "type": "Microsoft.Network/networkSecurityGroups",
+              "apiVersion": "2021-08-01",
+              "name": "[parameters('bastionSubnetNsgName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "securityRules": [
+                  {
+                    "name": "AllowHttpsInBound",
+                    "properties": {
+                      "protocol": "Tcp",
+                      "sourcePortRange": "*",
+                      "sourceAddressPrefix": "Internet",
+                      "destinationPortRange": "443",
+                      "destinationAddressPrefix": "*",
+                      "access": "Allow",
+                      "priority": 100,
+                      "direction": "Inbound"
+                    }
+                  },
+                  {
+                    "name": "AllowGatewayManagerInBound",
+                    "properties": {
+                      "protocol": "Tcp",
+                      "sourcePortRange": "*",
+                      "sourceAddressPrefix": "GatewayManager",
+                      "destinationPortRange": "443",
+                      "destinationAddressPrefix": "*",
+                      "access": "Allow",
+                      "priority": 110,
+                      "direction": "Inbound"
+                    }
+                  },
+                  {
+                    "name": "AllowLoadBalancerInBound",
+                    "properties": {
+                      "protocol": "Tcp",
+                      "sourcePortRange": "*",
+                      "sourceAddressPrefix": "AzureLoadBalancer",
+                      "destinationPortRange": "443",
+                      "destinationAddressPrefix": "*",
+                      "access": "Allow",
+                      "priority": 120,
+                      "direction": "Inbound"
+                    }
+                  },
+                  {
+                    "name": "AllowBastionHostCommunicationInBound",
+                    "properties": {
+                      "protocol": "*",
+                      "sourcePortRange": "*",
+                      "sourceAddressPrefix": "VirtualNetwork",
+                      "destinationPortRanges": [
+                        "8080",
+                        "5701"
+                      ],
+                      "destinationAddressPrefix": "VirtualNetwork",
+                      "access": "Allow",
+                      "priority": 130,
+                      "direction": "Inbound"
+                    }
+                  },
+                  {
+                    "name": "DenyAllInBound",
+                    "properties": {
+                      "protocol": "*",
+                      "sourcePortRange": "*",
+                      "sourceAddressPrefix": "*",
+                      "destinationPortRange": "*",
+                      "destinationAddressPrefix": "*",
+                      "access": "Deny",
+                      "priority": 1000,
+                      "direction": "Inbound"
+                    }
+                  },
+                  {
+                    "name": "AllowSshRdpOutBound",
+                    "properties": {
+                      "protocol": "Tcp",
+                      "sourcePortRange": "*",
+                      "sourceAddressPrefix": "*",
+                      "destinationPortRanges": [
+                        "22",
+                        "3389"
+                      ],
+                      "destinationAddressPrefix": "VirtualNetwork",
+                      "access": "Allow",
+                      "priority": 100,
+                      "direction": "Outbound"
+                    }
+                  },
+                  {
+                    "name": "AllowAzureCloudCommunicationOutBound",
+                    "properties": {
+                      "protocol": "Tcp",
+                      "sourcePortRange": "*",
+                      "sourceAddressPrefix": "*",
+                      "destinationPortRange": "443",
+                      "destinationAddressPrefix": "AzureCloud",
+                      "access": "Allow",
+                      "priority": 110,
+                      "direction": "Outbound"
+                    }
+                  },
+                  {
+                    "name": "AllowBastionHostCommunicationOutBound",
+                    "properties": {
+                      "protocol": "*",
+                      "sourcePortRange": "*",
+                      "sourceAddressPrefix": "VirtualNetwork",
+                      "destinationPortRanges": [
+                        "8080",
+                        "5701"
+                      ],
+                      "destinationAddressPrefix": "VirtualNetwork",
+                      "access": "Allow",
+                      "priority": 120,
+                      "direction": "Outbound"
+                    }
+                  },
+                  {
+                    "name": "AllowGetSessionInformationOutBound",
+                    "properties": {
+                      "protocol": "*",
+                      "sourcePortRange": "*",
+                      "sourceAddressPrefix": "*",
+                      "destinationAddressPrefix": "Internet",
+                      "destinationPortRanges": [
+                        "80",
+                        "443"
+                      ],
+                      "access": "Allow",
+                      "priority": 130,
+                      "direction": "Outbound"
+                    }
+                  },
+                  {
+                    "name": "DenyAllOutBound",
+                    "properties": {
+                      "protocol": "*",
+                      "sourcePortRange": "*",
+                      "destinationPortRange": "*",
+                      "sourceAddressPrefix": "*",
+                      "destinationAddressPrefix": "*",
+                      "access": "Deny",
+                      "priority": 1000,
+                      "direction": "Outbound"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "condition": "[not(empty(parameters('backendSubnetNsgName')))]",
+              "type": "Microsoft.Network/networkSecurityGroups",
+              "apiVersion": "2021-08-01",
+              "name": "[parameters('backendSubnetNsgName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "securityRules": [
+                  {
+                    "name": "AllowSshInbound",
+                    "properties": {
+                      "priority": 100,
+                      "access": "Allow",
+                      "direction": "Inbound",
+                      "destinationPortRange": "22",
+                      "protocol": "Tcp",
+                      "sourceAddressPrefix": "*",
+                      "sourcePortRange": "*",
+                      "destinationAddressPrefix": "*"
+                    }
+                  },
+                  {
+                    "name": "AllowHttpInbound",
+                    "properties": {
+                      "priority": 200,
+                      "access": "Allow",
+                      "direction": "Inbound",
+                      "destinationPortRange": "80",
+                      "protocol": "Tcp",
+                      "sourceAddressPrefix": "*",
+                      "sourcePortRange": "*",
+                      "destinationAddressPrefix": "*"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "condition": "[not(empty(parameters('natGatewayName')))]",
+              "type": "Microsoft.Network/publicIPAddresses",
+              "apiVersion": "2021-05-01",
+              "name": "[format('{0}PublicIp', parameters('natGatewayName'))]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "Standard"
+              },
+              "properties": {
+                "publicIPAddressVersion": "IPv4",
+                "publicIPAllocationMethod": "Static",
+                "idleTimeoutInMinutes": 4
+              }
+            },
+            {
+              "condition": "[not(empty(parameters('natGatewayName')))]",
+              "type": "Microsoft.Network/natGateways",
+              "apiVersion": "2021-08-01",
+              "name": "[if(not(empty(parameters('natGatewayName'))), parameters('natGatewayName'), 'placeholder')]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "Standard"
+              },
+              "properties": {
+                "idleTimeoutInMinutes": 4,
+                "publicIpAddresses": "[if(empty(parameters('natGatewayName')), createArray(), createArray(createObject('id', resourceId('Microsoft.Network/publicIPAddresses', format('{0}PublicIp', parameters('natGatewayName'))))))]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', format('{0}PublicIp', parameters('natGatewayName')))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Network/virtualNetworks",
+              "apiVersion": "2021-08-01",
+              "name": "[parameters('virtualNetworkName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "addressSpace": {
+                  "addressPrefixes": [
+                    "[parameters('virtualNetworkAddressPrefixes')]"
+                  ]
+                },
+                "subnets": [
+                  {
+                    "name": "[parameters('frontendSubnetName')]",
+                    "properties": {
+                      "addressPrefix": "[parameters('frontendSubnetAddressPrefix')]",
+                      "privateEndpointNetworkPolicies": "[parameters('frontendSubnetPrivateEndpointNetworkPolicies')]",
+                      "privateLinkServiceNetworkPolicies": "[parameters('frontendSubnetPrivateLinkServiceNetworkPolicies')]"
+                    }
+                  },
+                  {
+                    "name": "[parameters('backendSubnetName')]",
+                    "properties": {
+                      "addressPrefix": "[parameters('backendSubnetAddressPrefix')]",
+                      "networkSecurityGroup": "[if(not(empty(parameters('backendSubnetNsgName'))), createObject('id', resourceId('Microsoft.Network/networkSecurityGroups', parameters('backendSubnetNsgName'))), json('null'))]",
+                      "natGateway": "[if(not(empty(parameters('natGatewayName'))), createObject('id', resourceId('Microsoft.Network/natGateways', if(not(empty(parameters('natGatewayName'))), parameters('natGatewayName'), 'placeholder'))), json('null'))]",
+                      "privateEndpointNetworkPolicies": "[parameters('backendSubnetPrivateEndpointNetworkPolicies')]",
+                      "privateLinkServiceNetworkPolicies": "[parameters('backendSubnetPrivateLinkServiceNetworkPolicies')]"
+                    }
+                  },
+                  {
+                    "name": "[variables('bastionSubnetName')]",
+                    "properties": {
+                      "addressPrefix": "[parameters('bastionSubnetAddressPrefix')]",
+                      "networkSecurityGroup": "[if(not(empty(parameters('bastionSubnetNsgName'))), createObject('id', resourceId('Microsoft.Network/networkSecurityGroups', parameters('bastionSubnetNsgName'))), json('null'))]"
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('backendSubnetNsgName'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('bastionSubnetNsgName'))]",
+                "[resourceId('Microsoft.Network/natGateways', if(not(empty(parameters('natGatewayName'))), parameters('natGatewayName'), 'placeholder'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Network/publicIPAddresses",
+              "apiVersion": "2021-08-01",
+              "name": "[variables('bastionPublicIpAddressName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "sku": {
+                "name": "Standard"
+              },
+              "properties": {
+                "publicIPAllocationMethod": "Static"
+              }
+            },
+            {
+              "type": "Microsoft.Network/bastionHosts",
+              "apiVersion": "2021-08-01",
+              "name": "[parameters('bastionHostName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "disableCopyPaste": "[parameters('bastionHostDisableCopyPaste')]",
+                "enableFileCopy": "[parameters('bastionHostEnableFileCopy')]",
+                "enableIpConnect": "[parameters('bastionHostEnableIpConnect')]",
+                "enableShareableLink": "[parameters('bastionHostEnableShareableLink')]",
+                "enableTunneling": "[parameters('bastionHostEnableTunneling')]",
+                "ipConfigurations": [
+                  {
+                    "name": "IpConf",
+                    "properties": {
+                      "subnet": {
+                        "id": "[format('{0}/subnets/{1}', resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName')), variables('bastionSubnetName'))]"
+                      },
+                      "publicIPAddress": {
+                        "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('bastionPublicIpAddressName'))]"
+                      }
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('bastionPublicIpAddressName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Insights/diagnosticSettings",
+              "apiVersion": "2021-05-01-preview",
+              "scope": "[format('Microsoft.Network/networkSecurityGroups/{0}', parameters('backendSubnetNsgName'))]",
+              "name": "[variables('diagnosticSettingsName')]",
+              "properties": {
+                "workspaceId": "[parameters('workspaceId')]",
+                "logs": "[variables('nsgLogs')]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('backendSubnetNsgName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Insights/diagnosticSettings",
+              "apiVersion": "2021-05-01-preview",
+              "scope": "[format('Microsoft.Network/networkSecurityGroups/{0}', parameters('bastionSubnetNsgName'))]",
+              "name": "[variables('diagnosticSettingsName')]",
+              "properties": {
+                "workspaceId": "[parameters('workspaceId')]",
+                "logs": "[variables('nsgLogs')]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('bastionSubnetNsgName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Insights/diagnosticSettings",
+              "apiVersion": "2021-05-01-preview",
+              "scope": "[format('Microsoft.Network/virtualNetworks/{0}', parameters('virtualNetworkName'))]",
+              "name": "[variables('diagnosticSettingsName')]",
+              "properties": {
+                "workspaceId": "[parameters('workspaceId')]",
+                "logs": "[variables('vnetLogs')]",
+                "metrics": "[variables('vnetMetrics')]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Insights/diagnosticSettings",
+              "apiVersion": "2021-05-01-preview",
+              "scope": "[format('Microsoft.Network/bastionHosts/{0}', parameters('bastionHostName'))]",
+              "name": "[variables('diagnosticSettingsName')]",
+              "properties": {
+                "workspaceId": "[parameters('workspaceId')]",
+                "logs": "[variables('bastionLogs')]",
+                "metrics": "[variables('bastionMetrics')]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/bastionHosts', parameters('bastionHostName'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "virtualNetworkId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]"
+            },
+            "virtualNetworkName": {
+              "type": "string",
+              "value": "[parameters('virtualNetworkName')]"
+            },
+            "frontendSubnetId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('frontendSubnetName'))]"
+            },
+            "backendSubnetId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('backendSubnetName'))]"
+            },
+            "bastionSubnetId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), variables('bastionSubnetName'))]"
+            },
+            "frontendSubnetName": {
+              "type": "string",
+              "value": "[parameters('frontendSubnetName')]"
+            },
+            "backendSubnetName": {
+              "type": "string",
+              "value": "[parameters('backendSubnetName')]"
+            },
+            "bastionSubnetName": {
+              "type": "string",
+              "value": "[variables('bastionSubnetName')]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'clientWorkspace')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "clientVirtualMachine",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "vmName": {
+            "value": "[parameters('clientVmName')]"
+          },
+          "vmSize": {
+            "value": "[parameters('clientVmSize')]"
+          },
+          "vmSubnetId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'clientNetwork')).outputs.backendSubnetId.value]"
+          },
+          "storageAccountName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'clientStorageAccount')).outputs.name.value]"
+          },
+          "imagePublisher": {
+            "value": "[parameters('imagePublisher')]"
+          },
+          "imageOffer": {
+            "value": "[parameters('imageOffer')]"
+          },
+          "imageSku": {
+            "value": "[parameters('imageSku')]"
+          },
+          "authenticationType": {
+            "value": "[parameters('authenticationType')]"
+          },
+          "vmAdminUsername": {
+            "value": "[parameters('vmAdminUsername')]"
+          },
+          "vmAdminPasswordOrKey": {
+            "value": "[parameters('vmAdminPasswordOrKey')]"
+          },
+          "diskStorageAccountType": {
+            "value": "[parameters('diskStorageAccountType')]"
+          },
+          "numDataDisks": {
+            "value": "[parameters('numDataDisks')]"
+          },
+          "osDiskSize": {
+            "value": "[parameters('osDiskSize')]"
+          },
+          "dataDiskSize": {
+            "value": "[parameters('dataDiskSize')]"
+          },
+          "dataDiskCaching": {
+            "value": "[parameters('dataDiskCaching')]"
+          },
+          "workspaceName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'clientWorkspace')).outputs.name.value]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "tags": {
+            "value": "[parameters('tags')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.7.4.23292",
+              "templateHash": "12951054669513726199"
+            }
+          },
+          "parameters": {
+            "vmName": {
+              "type": "string",
+              "defaultValue": "TestVm",
+              "metadata": {
+                "description": "Specifies the name of the virtual machine."
+              }
+            },
+            "vmSize": {
+              "type": "string",
+              "defaultValue": "Standard_DS3_v2",
+              "metadata": {
+                "description": "Specifies the size of the virtual machine."
+              }
+            },
+            "vmSubnetId": {
+              "type": "string",
+              "metadata": {
+                "description": "Specifies the resource id of the subnet hosting the virtual machine."
+              }
+            },
+            "storageAccountName": {
+              "type": "string",
+              "metadata": {
+                "description": "Specifies the name of the storage account where the bootstrap diagnostic logs of the virtual machine are stored."
+              }
+            },
+            "imagePublisher": {
+              "type": "string",
+              "defaultValue": "Canonical",
+              "metadata": {
+                "description": "Specifies the image publisher of the disk image used to create the virtual machine."
+              }
+            },
+            "imageOffer": {
+              "type": "string",
+              "defaultValue": "UbuntuServer",
+              "metadata": {
+                "description": "Specifies the offer of the platform image or marketplace image used to create the virtual machine."
+              }
+            },
+            "imageSku": {
+              "type": "string",
+              "defaultValue": "18.04-LTS",
+              "metadata": {
+                "description": "Specifies the Ubuntu version for the VM. This will pick a fully patched image of this given Ubuntu version."
+              }
+            },
+            "authenticationType": {
+              "type": "string",
+              "defaultValue": "password",
+              "allowedValues": [
+                "sshPublicKey",
+                "password"
+              ],
+              "metadata": {
+                "description": "Specifies the type of authentication when accessing the Virtual Machine. SSH key is recommended."
+              }
+            },
+            "vmAdminUsername": {
+              "type": "string",
+              "metadata": {
+                "description": "Specifies the name of the administrator account of the virtual machine."
+              }
+            },
+            "vmAdminPasswordOrKey": {
+              "type": "secureString",
+              "metadata": {
+                "description": "Specifies the SSH Key or password for the virtual machine. SSH key is recommended."
+              }
+            },
+            "diskStorageAccountType": {
+              "type": "string",
+              "defaultValue": "Premium_LRS",
+              "allowedValues": [
+                "Premium_LRS",
+                "StandardSSD_LRS",
+                "Standard_LRS",
+                "UltraSSD_LRS"
+              ],
+              "metadata": {
+                "description": "Specifies the storage account type for OS and data disk."
+              }
+            },
+            "numDataDisks": {
+              "type": "int",
+              "defaultValue": 1,
+              "maxValue": 64,
+              "minValue": 0,
+              "metadata": {
+                "description": "Specifies the number of data disks of the virtual machine."
+              }
+            },
+            "osDiskSize": {
+              "type": "int",
+              "defaultValue": 50,
+              "metadata": {
+                "description": "Specifies the size in GB of the OS disk of the VM."
+              }
+            },
+            "dataDiskSize": {
+              "type": "int",
+              "defaultValue": 50,
+              "metadata": {
+                "description": "Specifies the size in GB of the OS disk of the virtual machine."
+              }
+            },
+            "dataDiskCaching": {
+              "type": "string",
+              "defaultValue": "ReadWrite",
+              "metadata": {
+                "description": "Specifies the caching requirements for the data disks."
+              }
+            },
+            "scriptFilePath": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Specifies the relative path of the scripts used to initialize the virtual machine."
+              }
+            },
+            "scriptFileName": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Specifies the script to download from the URI specified by the scriptFilePath parameter."
+              }
+            },
+            "loadBalancerName": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Specifies the name of the load balancer."
+              }
+            },
+            "workspaceName": {
+              "type": "string",
+              "metadata": {
+                "description": "Specifies the name of the Log Analytics workspace."
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Specifies the location."
+              }
+            },
+            "tags": {
+              "type": "object",
+              "metadata": {
+                "description": "Specifies the resource tags."
+              }
+            }
+          },
+          "variables": {
+            "vmNicName": "[format('{0}Nic', parameters('vmName'))]",
+            "scriptFileUri": "[format('{0}/{1}', parameters('scriptFilePath'), parameters('scriptFileName'))]",
+            "linuxConfiguration": {
+              "disablePasswordAuthentication": true,
+              "ssh": {
+                "publicKeys": [
+                  {
+                    "path": "[format('/home/{0}/.ssh/authorized_keys', parameters('vmAdminUsername'))]",
+                    "keyData": "[parameters('vmAdminPasswordOrKey')]"
+                  }
+                ]
+              },
+              "provisionVMAgent": true
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Network/networkInterfaces",
+              "apiVersion": "2021-08-01",
+              "name": "[variables('vmNicName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "ipConfigurations": [
+                  {
+                    "name": "ipconfig1",
+                    "properties": {
+                      "privateIPAllocationMethod": "Dynamic",
+                      "subnet": {
+                        "id": "[parameters('vmSubnetId')]"
+                      },
+                      "loadBalancerBackendAddressPools": "[if(empty(parameters('loadBalancerName')), createArray(), createArray(createObject('id', reference(resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancerName')), '2021-08-01').backendAddressPools[0].id)))]",
+                      "loadBalancerInboundNatRules": "[if(empty(parameters('loadBalancerName')), createArray(), createArray(createObject('id', reference(resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancerName')), '2021-08-01').inboundNatRules[0].id)))]"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "Microsoft.Compute/virtualMachines",
+              "apiVersion": "2021-11-01",
+              "name": "[parameters('vmName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "hardwareProfile": {
+                  "vmSize": "[parameters('vmSize')]"
+                },
+                "osProfile": {
+                  "computerName": "[parameters('vmName')]",
+                  "adminUsername": "[parameters('vmAdminUsername')]",
+                  "adminPassword": "[parameters('vmAdminPasswordOrKey')]",
+                  "linuxConfiguration": "[if(equals(parameters('authenticationType'), 'password'), json('null'), variables('linuxConfiguration'))]"
+                },
+                "storageProfile": {
+                  "copy": [
+                    {
+                      "name": "dataDisks",
+                      "count": "[length(range(0, parameters('numDataDisks')))]",
+                      "input": {
+                        "caching": "[parameters('dataDiskCaching')]",
+                        "diskSizeGB": "[parameters('dataDiskSize')]",
+                        "lun": "[range(0, parameters('numDataDisks'))[copyIndex('dataDisks')]]",
+                        "name": "[format('{0}-DataDisk{1}', parameters('vmName'), range(0, parameters('numDataDisks'))[copyIndex('dataDisks')])]",
+                        "createOption": "Empty",
+                        "managedDisk": {
+                          "storageAccountType": "[parameters('diskStorageAccountType')]"
+                        }
+                      }
+                    }
+                  ],
+                  "imageReference": {
+                    "publisher": "[parameters('imagePublisher')]",
+                    "offer": "[parameters('imageOffer')]",
+                    "sku": "[parameters('imageSku')]",
+                    "version": "latest"
+                  },
+                  "osDisk": {
+                    "name": "[format('{0}_OSDisk', parameters('vmName'))]",
+                    "caching": "ReadWrite",
+                    "createOption": "FromImage",
+                    "diskSizeGB": "[parameters('osDiskSize')]",
+                    "managedDisk": {
+                      "storageAccountType": "[parameters('diskStorageAccountType')]"
+                    }
+                  }
+                },
+                "networkProfile": {
+                  "networkInterfaces": [
+                    {
+                      "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('vmNicName'))]"
+                    }
+                  ]
+                },
+                "diagnosticsProfile": {
+                  "bootDiagnostics": {
+                    "enabled": true,
+                    "storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2021-09-01').primaryEndpoints.blob]"
+                  }
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('vmNicName'))]"
+              ]
+            },
+            {
+              "condition": "[and(not(empty(parameters('scriptFilePath'))), not(empty(parameters('scriptFileName'))))]",
+              "type": "Microsoft.Compute/virtualMachines/extensions",
+              "apiVersion": "2021-11-01",
+              "name": "[format('{0}/{1}', parameters('vmName'), 'CustomScript')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "2.0",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                  "skipDos2Unix": false,
+                  "timestamp": 123456789,
+                  "fileUris": [
+                    "[variables('scriptFileUri')]"
+                  ]
+                },
+                "protectedSettings": {
+                  "commandToExecute": "[format('bash {0}', parameters('scriptFileName'))]"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Compute/virtualMachines/extensions",
+              "apiVersion": "2021-11-01",
+              "name": "[format('{0}/{1}', parameters('vmName'), 'LogAnalytics')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "publisher": "Microsoft.EnterpriseCloud.Monitoring",
+                "type": "OmsAgentForLinux",
+                "typeHandlerVersion": "1.12",
+                "settings": {
+                  "workspaceId": "[reference(resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName')), '2021-12-01-preview').customerId]",
+                  "stopOnMultipleConnections": false
+                },
+                "protectedSettings": {
+                  "workspaceKey": "[listKeys(resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName')), '2021-12-01-preview').primarySharedKey]"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('vmName'), 'CustomScript')]",
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Compute/virtualMachines/extensions",
+              "apiVersion": "2020-06-01",
+              "name": "[format('{0}/{1}', parameters('vmName'), 'DependencyAgent')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "publisher": "Microsoft.Azure.Monitoring.DependencyAgent",
+                "type": "DependencyAgentLinux",
+                "typeHandlerVersion": "9.10",
+                "autoUpgradeMinorVersion": true
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('vmName'), 'CustomScript')]",
+                "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('vmName'), 'LogAnalytics')]",
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]"
+              ]
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'clientStorageAccount')]",
+        "[resourceId('Microsoft.Resources/deployments', 'clientNetwork')]",
+        "[resourceId('Microsoft.Resources/deployments', 'clientWorkspace')]"
+      ]
+    }
+  ]
+}
