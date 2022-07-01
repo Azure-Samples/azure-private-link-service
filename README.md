@@ -273,7 +273,7 @@ Assuming that the user deploying the solution has `Owner` or `Contributor` role 
 - Configure your application to run behind a standard load balancer in your virtual network. If you already have your application configured behind a standard load balancer, you can skip this step.
 - Create a Private Link Service referencing the load balancer above. In the load balancer selection process, choose the frontend IP configuration where you want to receive the traffic. Choose a subnet for NAT IP addresses for the Private Link Service. It is recommended to have at least eight NAT IP addresses available in the subnet. All consumer traffic will appear to originate from this pool of private IP addresses to the service provider. Choose the appropriate properties/settings for the Private Link Service.
 
-> [!NOTE]
+> **NOTE**  
 > Azure Private Link Service is only supported on Standard Load Balancer.
 
 ### Share your service
