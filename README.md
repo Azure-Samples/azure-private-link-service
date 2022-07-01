@@ -128,7 +128,7 @@ if [[ $? != 0 ]]; then
   az group create --name $resourceGroupName --location $location 1>/dev/null
 
   if [[ $? == 0 ]]; then
-    echo "[$resourceGroupName] resource group successfully created in the [$subscriptionName] subscription"
+    echo "[$resourceGroupName] resource group created in the [$subscriptionName] subscription"
   else
     echo "Failed to create [$resourceGroupName] resource group in the [$subscriptionName] subscription"
     exit
